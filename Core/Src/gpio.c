@@ -71,8 +71,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	if(GPIO_Pin == GPIO_PIN_13){
 		// PC13Sig = true;
 
-//		current = INA219_ReadCurrent(&ina219t);
-//		rawCurrent = INA219_ReadRawCurrent(&ina219t);
+		current = INA219_ReadCurrent(&ina219t);
+		rawCurrent = INA219_ReadRawCurrent(&ina219t);
 	}
 
 }
