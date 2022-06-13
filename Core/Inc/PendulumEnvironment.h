@@ -4,6 +4,8 @@
 #include <vector>
 #include <cstdint>
 
+#include "ina219.h"
+
 #ifndef STM32
 #include <iostream>
 #endif
@@ -19,20 +21,21 @@ private:
     static const double MASS;
     static const double LENGTH;
 
-		/**
-		* \brief Available actions for the LearningAgent.
-		*
-		* Each number $a$ in this list, with $a \in ]0.0;1.0], corresponds to two
-		* actions available for the LearningAgent: $a*MAX_TORQUE$ and
-		* $-a*MAX_TORQUE$.
-		* An additional action 0.0 is always available to the LearningAgent.
-		*
-		* A total of availableAction.size()*2 + 1 actions are thus available to
-		* the LearningAgent, through the doAction() method.
-		*/
+	/**
+	* \brief Available actions for the LearningAgent.
+	*
+	* Each number $a$ in this list, with $a \in ]0.0;1.0], corresponds to two
+	* actions available for the LearningAgent: $a*MAX_TORQUE$ and
+	* $-a*MAX_TORQUE$.
+	* An additional action 0.0 is always available to the LearningAgent.
+	*
+	* A total of availableAction.size()*2 + 1 actions are thus available to
+	* the LearningAgent, through the doAction() method.
+	*/
     const std::vector<double> availableActions;
-		
-		double generateRandDouble(double min, double max);
+
+    /// Generate a random double number between min and max using rand()
+	double generateRandDouble(double min, double max);
 
 public:
     /// Setter for angle state
@@ -68,12 +71,12 @@ public:
     /// Resets the environment
     void reset(size_t seed = 0);
 
-		/**
-		* \brief Get the action from its associated ID.
-		*
-		* \param[in] actionID the integer representing the selected action.
-		* \return the torque applied to the pendulum.
-		*/
+	/**
+	* \brief Get the action from its associated ID.
+	*
+	* \param[in] actionID the integer representing the selected action.
+	* \return the torque applied to the pendulum.
+	*/
     double getActionFromID(const uint64_t& actionID);
 
     /// Inherited via LearningEnvironment
@@ -81,6 +84,7 @@ public:
 
     /// Starts the inference for nbSteps
     void startInference(int nbSteps);
+
 
 };
 

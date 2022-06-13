@@ -26,10 +26,9 @@
 #include "ina219.h"
 #include <stdbool.h>
 
-extern double current;
-extern INA219_t ina219t;
-uint16_t rawCurrent;
+void recordActiveMonitor(INA219_t* ina219t);
 
+extern INA219_t ina219t;
 bool PC13Sig = false;
 
 /* USER CODE END 0 */
@@ -70,9 +69,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
 	if(GPIO_Pin == GPIO_PIN_13){
 		// PC13Sig = true;
-
-		current = INA219_ReadCurrent(&ina219t);
-		rawCurrent = INA219_ReadRawCurrent(&ina219t);
+		recordActiveMonitor(&ina219t);
 	}
 
 }

@@ -26,6 +26,7 @@
 #include <cstdbool>
 #include <vector>
 #include "PendulumEnvironment.h"
+#include "CurrentMonitor.h"
 #include "ina219.h"
 extern "C" {
 	#include "pendulum_program.h"
@@ -62,7 +63,6 @@ int debug[10];
 
 // === Current measurement ===
 
-double current = 0.0;
 INA219_t ina219t;
 uint32_t seed = 0;
 
@@ -136,6 +136,12 @@ int main(void)
 								| INA219_CONFIG_GAIN_1_40MV | INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS
 								| INA219_CONFIG_SADCRES_12BIT);	// 0x219f
 
+	/* === Current monitoring === */
+
+	CurrentMonitor monitor;
+	monitor.makeActive();
+
+	debug[0] = sizeof(CurrentMonitor);
 
   /* USER CODE END 2 */
 
