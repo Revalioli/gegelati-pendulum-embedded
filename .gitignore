@@ -1,0 +1,11 @@
+Debug/
+
+# STM32CubeIDe directories
+.cproject
+.mxproject
+.project
+.settings/
+
+PendulumEmbedded Debug.launch
+STM32F446RETX_FLASH.ld
+STM32F446RETX_RAM.ld
