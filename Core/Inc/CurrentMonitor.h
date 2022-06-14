@@ -6,8 +6,11 @@
 
 #include "PendulumEnvironment.h"
 
+#include "tim.h"
+#include "ina219.h"
+
 /// Calls the recordCurrent() method of CurrentMonitor::activeMonitor
-extern "C" void recordActiveMonitor(INA219_t* ina219t);
+extern "C" void recordActiveMonitor();
 
 
 class CurrentMonitor {
@@ -16,7 +19,9 @@ class CurrentMonitor {
 	static CurrentMonitor* activeMonitor;
 
 	/// Size of the current measurements history circular buffer
-	static const int CURRENT_HISTORY_SIZE = 100;	// Default = 100 --> 800 bytes
+	static const int CURRENT_HISTORY_SIZE = 50;	// Default = 100 --> 800 bytes
+
+
 
 	/// Current measurements history circular buffer
 	double currentHistory[CURRENT_HISTORY_SIZE];
@@ -27,12 +32,24 @@ class CurrentMonitor {
 	/// Last compute averageCurrent
 	double averageCurrent;
 	
+	/// ina219 handler to be used for current measurement
+	INA219_t * ina219t;
 
-	friend void recordActiveMonitor(INA219_t* ina219t);
+	/// Associated timer for auto measurement
+	TIM_HandleTypeDef * timer;
+
+
+	friend void recordActiveMonitor();
 
 public:
 
-	CurrentMonitor();
+	/**
+	 * \brief Basic constructor
+	 *
+	 * \param[out] INA219_t * the ina219 handler to be used for current measurements
+	 * \param[out] TIM_HandleTypeDef * the timer used for auto measurement when this is the activeMonitor, pass nullptr for no auto measurement
+	 */
+	CurrentMonitor(INA219_t * ina219t, TIM_HandleTypeDef * tim = nullptr);
 	virtual ~CurrentMonitor() {}
 
     /// Clears the current measurement history
@@ -40,12 +57,10 @@ public:
 
     /**
      * \brief Retrieve from the ina219t the current
-     *
-     * \param[in] ina219t the INA219_t* for the current sensor ina219t
      */
-    void recordCurrent(INA219_t* ina219t);
+    void recordCurrent();
 
-    /// Sets this CurrentMonitor as the activeMonitor
+    /// Sets this CurrentMonitor as the activeMonitor and starts auto measurement using its associated timer
     void makeActive();
 
 };

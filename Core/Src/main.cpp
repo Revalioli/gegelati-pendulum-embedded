@@ -19,6 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "i2c.h"
+#include "tim.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -115,6 +116,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_I2C1_Init();
+  MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
 
 	/* == Pendulum environment === */
@@ -125,7 +127,7 @@ int main(void)
 
 	/* === INA219 === */
 
-	if(INA219_Init(&ina219t, &hi2c1, INA219_DEFAULT_ADDRESS, 1) == 0){
+	if(INA219_Init(&ina219t, &hi2c1, INA219_DEFAULT_ADDRESS, 3.2768) == 0){
 		errorFlag = 1;
 		while(1){
 
@@ -138,10 +140,9 @@ int main(void)
 
 	/* === Current monitoring === */
 
-	CurrentMonitor monitor;
+	CurrentMonitor monitor(&ina219t, &htim7);
+	CurrentMonitor dummy(&ina219t);
 	monitor.makeActive();
-
-	debug[0] = sizeof(CurrentMonitor);
 
   /* USER CODE END 2 */
 
@@ -150,23 +151,22 @@ int main(void)
 	while (1)
 	{
 
-		// if(PC13Sig == true){
-			int nbInferences = 15;
+		if(PC13Sig == true)
+			dummy.makeActive();
 
-			for(int i = 0; i < nbInferences; i++){
-				startedInference++;
+		int nbInferences = 15;
 
-				// start = HAL_GetTick();
-				seed = HAL_GetTick();
-				pendulum.reset(seed);
-				pendulum.startInference((int)nbActions);
-				// end = HAL_GetTick();
+		for(int i = 0; i < nbInferences; i++){
+			startedInference++;
 
-				endedInference++;
-			}
+			// start = HAL_GetTick();
+			seed = HAL_GetTick();
+			pendulum.reset(seed);
+			pendulum.startInference((int)nbActions);
+			// end = HAL_GetTick();
 
-			// PC13Sig = false;
-		//}
+			endedInference++;
+		}
 
 
     /* USER CODE END WHILE */

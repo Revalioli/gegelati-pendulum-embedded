@@ -68,8 +68,7 @@ void MX_GPIO_Init(void)
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
 	if(GPIO_Pin == GPIO_PIN_13){
-		// PC13Sig = true;
-		recordActiveMonitor(&ina219t);
+		PC13Sig = true;
 	}
 
 }
