@@ -5,12 +5,12 @@
 #include "CurrentMonitor.h"
 
 #include "ina219.h"
-
+#include <iostream>
 
 
 CurrentMonitor* CurrentMonitor::activeMonitor = nullptr;
 
-CurrentMonitor::CurrentMonitor(INA219_t * ina219t, TIM_HandleTypeDef * tim) : currentHistory{0}, currentHistoryIdx(0), averageCurrent(0.0), timer(tim), ina219t(ina219t) {}
+CurrentMonitor::CurrentMonitor(INA219_t * ina219t, TIM_HandleTypeDef * tim) : currentHistory{0}, currentHistoryIdx(0), averageCurrent(0.0), ina219t(ina219t), timer(tim) {}
 
 
 void CurrentMonitor::clearHistory(){
@@ -24,7 +24,8 @@ void CurrentMonitor::clearHistory(){
 
 void CurrentMonitor::recordCurrent(){
 
-	this->currentHistory[currentHistoryIdx] = INA219_ReadCurrent(this->ina219t);
+	double current = INA219_ReadCurrent(this->ina219t);
+	this->currentHistory[currentHistoryIdx] = current;
 	currentHistoryIdx++;
 
 	if (currentHistoryIdx == CURRENT_HISTORY_SIZE) {
@@ -37,18 +38,21 @@ void CurrentMonitor::recordCurrent(){
 		averageCurrent = averageCurrent / CURRENT_HISTORY_SIZE;
 	}
 
+	// Send current measured current to standard output
+	// printf("%f\r\n", current);
+
 }
 
 void CurrentMonitor::makeActive(){
 
 	// Stop timer doing auto measurement for old active monitor
 	if(CurrentMonitor::activeMonitor != nullptr && CurrentMonitor::activeMonitor->timer != nullptr)
-		HAL_TIM_Base_Stop_IT(timer);
+		HAL_TIM_Base_Stop_IT(CurrentMonitor::activeMonitor->timer);
 
 	CurrentMonitor::activeMonitor = this;
 
 	// Start timer for auto measurement
-	if(CurrentMonitor::activeMonitor->timer != nullptr)
+	if(timer != nullptr)
 		HAL_TIM_Base_Start_IT(timer);
 }
 

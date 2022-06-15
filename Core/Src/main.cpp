@@ -20,12 +20,14 @@
 #include "main.h"
 #include "i2c.h"
 #include "tim.h"
+#include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <cstdbool>
 #include <vector>
+#include <iostream>
 #include "PendulumEnvironment.h"
 #include "CurrentMonitor.h"
 #include "ina219.h"
@@ -117,6 +119,7 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
   MX_TIM7_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
 	/* == Pendulum environment === */
@@ -141,8 +144,7 @@ int main(void)
 	/* === Current monitoring === */
 
 	CurrentMonitor monitor(&ina219t, &htim7);
-	CurrentMonitor dummy(&ina219t);
-	monitor.makeActive();
+	// monitor.makeActive();
 
   /* USER CODE END 2 */
 
@@ -151,22 +153,22 @@ int main(void)
 	while (1)
 	{
 
-		if(PC13Sig == true)
-			dummy.makeActive();
-
-		int nbInferences = 15;
+		int nbInferences = 5;
 
 		for(int i = 0; i < nbInferences; i++){
 			startedInference++;
 
-			// start = HAL_GetTick();
+			start = HAL_GetTick();
 			seed = HAL_GetTick();
 			pendulum.reset(seed);
 			pendulum.startInference((int)nbActions);
-			// end = HAL_GetTick();
+			end = HAL_GetTick();
+
+			// debug[0] = end - start;
 
 			endedInference++;
 		}
+
 
 
     /* USER CODE END WHILE */
