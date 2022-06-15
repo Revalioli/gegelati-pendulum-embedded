@@ -25,7 +25,8 @@
 
 #include "ina219.h"
 #include <stdbool.h>
-#include "stdio.h"
+#include <stdio.h>
+#include "serialCommunication.h"
 
 void recordActiveMonitor(INA219_t* ina219t);
 
@@ -71,6 +72,17 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
 	if(GPIO_Pin == GPIO_PIN_13){
 		PC13Sig = true;
+
+		char buff[50];
+
+		printf("Starting reading\n");
+
+		if(readSerialLine(buff, 50) != NULL){
+			printf("String was : %s", buff);
+		}
+		else
+			printf("Error with readSerialLine\n");
+
 	}
 
 }

@@ -158,11 +158,11 @@ int main(void)
 		for(int i = 0; i < nbInferences; i++){
 			startedInference++;
 
-			start = HAL_GetTick();
+			// start = HAL_GetTick();
 			seed = HAL_GetTick();
 			pendulum.reset(seed);
 			pendulum.startInference((int)nbActions);
-			end = HAL_GetTick();
+			// end = HAL_GetTick();
 
 			// debug[0] = end - start;
 
