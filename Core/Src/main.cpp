@@ -158,7 +158,7 @@ int main(void)
 	printf("Enter number of attempts for benchmark\n");
 	scanf("%d\n", &nb);
 
-	TimingBench bench(inferenceBenchWrapper, &htim5, nb);
+	TimingBench bench(inferenceBenchWrapper, &htim5, nb, TimeUnit::Milliseconds, 0.001);
 	int benchResult = 0;
 	pendulum_ptr = &pendulum;
 
@@ -177,9 +177,10 @@ int main(void)
 			seed = HAL_GetTick();
 			pendulum.reset(seed);
 
-			benchResult = bench.startBench();
+			bench.startBench();
+			benchResult = bench.getResult();
 
-			printf("Bench result : %d us\n", benchResult);
+			bench.printResult();
 
 			printf("Exiting timing bench\n");
 
