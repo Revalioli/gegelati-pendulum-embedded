@@ -47,3 +47,41 @@ int __io_getchar(void){
 
 	return ch;
 }
+
+
+int _read(int file, char *ptr, int len){
+
+	if(file == STDIN_FILENO){
+
+		// Workaround because I can't really send dummy character when
+		// the user is not typing
+		for (int i = 0; i < len; i++){
+
+			int ch = __io_getchar();
+			*ptr++ = ch;
+
+			if(ch == '\n'){
+				while(i < len){
+					*ptr++ = '\0';
+					i++;
+				}
+			}
+
+		}
+
+	}
+	else{
+
+		// Base implementation
+		int DataIdx;
+
+		for (DataIdx = 0; DataIdx < len; DataIdx++)
+		{
+			*ptr++ = __io_getchar();
+		}
+	}
+
+	return len;
+
+
+}
