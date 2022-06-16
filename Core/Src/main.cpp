@@ -30,6 +30,7 @@
 #include <iostream>
 #include "PendulumEnvironment.h"
 #include "CurrentMonitor.h"
+#include "TimingBench.h"
 #include "ina219.h"
 extern "C" {
 	#include "pendulum_program.h"
@@ -60,9 +61,12 @@ uint8_t errorFlag = 0;
 // === DEBUG ===
 int startedInference = 0;
 int endedInference = 0;
-//uint32_t start = 0;
-//uint32_t end = 0;
 int debug[10];
+
+// === Pendulum global access and parameters === */
+
+PendulumEnvironment * pendulum_ptr;
+uint16_t nbActions = 1000;	// Number of actions per inference
 
 // === Current measurement ===
 
@@ -81,6 +85,8 @@ extern "C" {
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+
+void inferenceBenchWrapper(void);
 
 /* USER CODE END PFP */
 
@@ -120,13 +126,13 @@ int main(void)
   MX_I2C1_Init();
   MX_TIM7_Init();
   MX_USART2_UART_Init();
+  MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
 
 	/* == Pendulum environment === */
 	std::vector<double> availableAction = {0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1.0};
 	PendulumEnvironment pendulum(availableAction);
 	in1 = pendulum.currentState;
-	uint16_t nbActions = 1000;	// Number of actions per inference
 
 	/* === INA219 === */
 
@@ -146,6 +152,12 @@ int main(void)
 	CurrentMonitor monitor(&ina219t, &htim7);
 	// monitor.makeActive();
 
+
+	/* === Timing Benchmark === */
+	TimingBench bench(inferenceBenchWrapper, &htim5, 5);
+	int benchResult = 0;
+	pendulum_ptr = &pendulum;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -153,20 +165,21 @@ int main(void)
 	while (1)
 	{
 
-		int nbInferences = 5;
+		if(PC13Sig){
 
-		for(int i = 0; i < nbInferences; i++){
-			startedInference++;
+			printf("Starting timing bench\n");
 
-			// start = HAL_GetTick();
+			// Setup
 			seed = HAL_GetTick();
 			pendulum.reset(seed);
-			pendulum.startInference((int)nbActions);
-			// end = HAL_GetTick();
 
-			// debug[0] = end - start;
+			benchResult = bench.startBench();
 
-			endedInference++;
+			printf("Bench result : %d us\n", benchResult);
+
+			printf("Exiting timing bench\n");
+
+			PC13Sig = false;
 		}
 
 
@@ -226,6 +239,10 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void inferenceBenchWrapper(void){
+	pendulum_ptr->startInference((int)nbActions);
+}
 
 /* USER CODE END 4 */
 

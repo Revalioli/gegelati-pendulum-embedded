@@ -23,15 +23,15 @@
 
 /* USER CODE BEGIN 0 */
 
-#include "ina219.h"
-#include <stdbool.h>
 #include <stdio.h>
+#include <stdbool.h>
+#include "ina219.h"
 #include "serialCommunication.h"
 
 void recordActiveMonitor(INA219_t* ina219t);
 
 extern INA219_t ina219t;
-bool PC13Sig = false;
+volatile bool PC13Sig = 0;
 
 /* USER CODE END 0 */
 
@@ -72,17 +72,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
 	if(GPIO_Pin == GPIO_PIN_13){
 		PC13Sig = true;
-
-		char buff[50];
-
-		printf("Starting reading\n");
-
-		if(readSerialLine(buff, 50) != NULL){
-			printf("String was : %s", buff);
-		}
-		else
-			printf("Error with readSerialLine\n");
-
 	}
 
 }
