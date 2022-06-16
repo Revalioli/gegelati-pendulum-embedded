@@ -67,6 +67,7 @@ int debug[10];
 
 PendulumEnvironment * pendulum_ptr;
 uint16_t nbActions = 1000;	// Number of actions per inference
+CurrentMonitor * monitor_ptr;
 
 // === Current measurement ===
 
@@ -87,6 +88,7 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
 void inferenceBenchWrapper(void);
+void currentMeasurementTimingBenchWrappe(void);
 
 /* USER CODE END PFP */
 
@@ -155,12 +157,14 @@ int main(void)
 
 	/* === Timing Benchmark === */
 	int nb;
-	printf("Enter number of attempts for benchmark\n");
+	std::cout << "Enter number of attempts for benchmark" << std::endl;
 	scanf("%d\n", &nb);
 
-	TimingBench bench(inferenceBenchWrapper, &htim5, nb, TimeUnit::Milliseconds, 0.001);
-	int benchResult = 0;
+	// TimingBench benchInference(inferenceBenchWrapper, &htim5, nb, TimeUnit::Milliseconds, 0.001f);
 	pendulum_ptr = &pendulum;
+
+	TimingBench benchRecordCurrent(currentMeasurementTimingBenchWrappe, &htim5, nb, TimeUnit::Microseconds, 1.f);
+	monitor_ptr = &monitor;
 
   /* USER CODE END 2 */
 
@@ -171,18 +175,24 @@ int main(void)
 
 		if(PC13Sig){
 
-			printf("Starting timing bench\n");
+			// Inference timing bench
+//			std::cout << "Starting timing bench" << std::endl;
+//
+//			benchInference.startBench();
+//			benchInference.printResult();
+//
+//			std::cout << "Exiting timing bench" << std::endl;
+//
+//			PC13Sig = false;
 
-			// Setup
-			seed = HAL_GetTick();
-			pendulum.reset(seed);
 
-			bench.startBench();
-			benchResult = bench.getResult();
+			// CurrentMonitor record timing
+			std::cout << "Starting timing bench" << std::endl;
 
-			bench.printResult();
+			benchRecordCurrent.startBench();
+			benchRecordCurrent.printResult();
 
-			printf("Exiting timing bench\n");
+			std::cout << "Exiting timing bench" << std::endl;
 
 			PC13Sig = false;
 		}
@@ -245,8 +255,17 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
+// Bench wrappers
+
 void inferenceBenchWrapper(void){
+	// Setup
+	seed = HAL_GetTick();
+	pendulum_ptr->reset(seed);
 	pendulum_ptr->startInference((int)nbActions);
+}
+
+void currentMeasurementTimingBenchWrappe(void){
+	monitor_ptr->recordCurrent();
 }
 
 /* USER CODE END 4 */

@@ -38,8 +38,7 @@ void CurrentMonitor::recordCurrent(){
 		averageCurrent = averageCurrent / CURRENT_HISTORY_SIZE;
 	}
 
-	// Send current measured current to standard output
-	// printf("%f\r\n", current);
+	// std::cout << current << std::endl;
 
 }
 
