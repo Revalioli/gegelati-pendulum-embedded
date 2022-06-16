@@ -29,9 +29,7 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
 #include <stdbool.h>
-
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */
@@ -42,7 +40,7 @@ void MX_GPIO_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
-extern bool PC13Sig;
+extern volatile bool PC13Sig;
 
 /* USER CODE END Prototypes */
 

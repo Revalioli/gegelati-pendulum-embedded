@@ -83,8 +83,8 @@ extern HAL_StatusTypeDef INA219_I2C_Status;	///< Stores the returned status of t
 typedef struct
 {
 	I2C_HandleTypeDef 	*ina219_i2c;	// HAl I2C handler associated with the I2C pins used to communicate
-	uint8_t	Address;									// Slave address of the INA219
-	double current_LSB;								// For current register, depends of the epected maximum current value in A
+	volatile uint8_t	Address;									// Slave address of the INA219
+	volatile double current_LSB;								// For current register, depends of the epected maximum current value in A
 } INA219_t;
 
 /**
