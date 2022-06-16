@@ -22,4 +22,6 @@ char * readSerialLine(char * dest, int len);
 
 int __io_getchar(void);
 
+int _read(int file, char *ptr, int len);
+
 #endif /* INC_SERIALCOMMUNICATION_H_ */

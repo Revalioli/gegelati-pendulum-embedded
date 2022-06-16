@@ -154,7 +154,11 @@ int main(void)
 
 
 	/* === Timing Benchmark === */
-	TimingBench bench(inferenceBenchWrapper, &htim5, 5);
+	int nb;
+	printf("Enter number of attempts for benchmark\n");
+	scanf("%d\n", &nb);
+
+	TimingBench bench(inferenceBenchWrapper, &htim5, nb);
 	int benchResult = 0;
 	pendulum_ptr = &pendulum;
 
