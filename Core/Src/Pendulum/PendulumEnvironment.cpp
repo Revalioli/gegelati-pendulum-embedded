@@ -87,6 +87,7 @@ void PendulumEnvironment::doAction(uint64_t& actionID) {
 void PendulumEnvironment::startInference(int nbSteps){
 
 	for(int i = 0; i < nbSteps; i++){
+		this->currentStep = i;
 		uint64_t action = (uint64_t)inferenceTPG();
 		this->doAction(action);
 
@@ -94,6 +95,8 @@ void PendulumEnvironment::startInference(int nbSteps){
 		std::cout << *this << " === Step " << i << ", action : " << getActionFromID(action) << std::endl;
 #endif
 	}
+
+	this->currentStep = -1;
 }
 
 

@@ -37,6 +37,9 @@ private:
     /// Generate a random double number between min and max using rand()
 	double generateRandDouble(double min, double max);
 
+	/// Current step during inference, -1 otherwise
+	volatile int currentStep;
+
 public:
     /// Setter for angle state
     void setAngle(double newValue);
@@ -56,17 +59,20 @@ public:
     * Attributes angle and velocity are set to 0.0 by default.
     */
     PendulumEnvironment(const std::vector<double>& actions) :
-            availableActions(actions)
+            availableActions(actions), currentStep(-1)
     {
 			currentState[0] = 0.0;
 			currentState[1] = 0.0;
-		};
+	};
 
     /// Getter for angle state
     double getAngle() const;
 
     /// Getter for velocity
     double getVelocity() const;
+
+    /// Return the current inference step
+    int getCurrentStep() const;
 
     /// Resets the environment
     void reset(size_t seed = 0);
@@ -87,6 +93,9 @@ public:
 
 
 };
+
+inline int PendulumEnvironment::getCurrentStep() const { return this->currentStep; }
+
 
 #ifndef STM32
 std::ostream& operator<<(std::ostream& os, const PendulumEnvironment& pendulum);
