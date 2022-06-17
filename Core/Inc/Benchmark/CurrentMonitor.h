@@ -15,25 +15,17 @@ extern "C" void recordActiveMonitor();
 
 class CurrentMonitor {
 
-	/// CurrentMonitor used with global callback
-	static CurrentMonitor* activeMonitor;
+protected:
 
 	/// Size of the current measurements history circular buffer
 	static const int CURRENT_HISTORY_SIZE = 50;	// Default = 100 --> 800 bytes
 
+private:
 
-	/* === Results === */
+	/// CurrentMonitor used with global callback
+	static CurrentMonitor* activeMonitor;
 
-	/// Current measurements history circular buffer
-	double currentHistory[CURRENT_HISTORY_SIZE];
-
-	/// Index of the current position in the current measurement history
-	uint16_t currentHistoryIdx;
-
-	/// Last compute averageCurrent
-	double averageCurrent;
 	
-
 	/* === Peripherals ==== */
 
 	/// ina219 handler to be used for current measurement
@@ -44,6 +36,19 @@ class CurrentMonitor {
 
 
 	friend void recordActiveMonitor();
+
+protected:
+
+	/* === Results === */
+
+	/// Current measurements history circular buffer
+	double currentHistory[CurrentMonitor::CURRENT_HISTORY_SIZE];
+
+	/// Index of the next empty position in the current measurement history
+	uint16_t currentHistoryIdx;
+
+	/// Last compute averageCurrent
+	double averageCurrent;
 
 public:
 
@@ -62,8 +67,11 @@ public:
     /// Clears the current measurement history
     void clearHistory();
 
+    /// Sends currentHistory values up to currentHistoryIdx to stdout
+    virtual void flushHistory();
+
     /// Fetches and stores the current value from the INA219
-    void recordCurrent();
+    virtual void recordCurrent();
 
     /// Sets this CurrentMonitor as the activeMonitor and starts auto measurement using its associated timer
     void makeActive();

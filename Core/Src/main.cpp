@@ -30,6 +30,7 @@
 #include <iostream>
 #include "PendulumEnvironment.h"
 #include "CurrentMonitor.h"
+#include "PendulumCurrentMonitor.h"
 #include "TimingBench.h"
 #include "CurrentBench.h"
 #include "ina219.h"
@@ -153,8 +154,10 @@ int main(void)
 
 	/* === Current monitoring === */
 
-	// CurrentMonitor monitor(&ina219t, &htim7);
-	// monitor.makeActive();
+//	 CurrentMonitor monitor(&ina219t, &htim7);
+//	 monitor.makeActive();
+//	 PendulumCurrentMonitor cMonitor(&ina219t, pendulum, &htim7);
+//	 cMonitor.makeActive();
 
 
 	/* === Timing Benchmark === */
@@ -164,12 +167,13 @@ int main(void)
 //
 //	TimingBench benchInference(inferenceBenchWrapper, &htim5, nb, TimeUnit::Milliseconds, 0.001f);
 	pendulum_ptr = &pendulum;
-//
-//	TimingBench benchRecordCurrent(currentMeasurementTimingBenchWrappe, &htim5, nb, TimeUnit::Microseconds, 1.f);
+
+//	TimingBench benchRecordCurrent(currentMeasurementTimingBenchWrappe, &htim5, 100, TimeUnit::Microseconds, 1.f);
+//	monitor.flushWhenFull = false;
 //	monitor_ptr = &monitor;
 
-	CurrentBench currentBench(inferenceCurrentBenchWrapper, &ina219t, &htim7);
-
+//	CurrentBench currentBench(inferenceCurrentBenchWrapper, &ina219t, &htim7);
+//	CurrentBench currentBench(inferenceBenchWrapper, &cMonitor);
 
 	/* === Current Benchmark === */
 
@@ -205,12 +209,11 @@ int main(void)
 
 
 			// Inference current bench
-			std::cout << "Starting current bench" << std::endl;
-
-			currentBench.startBench();
-
-			std::cout << "Exiting current bench" << std::endl;
-
+//			std::cout << "Starting current bench" << std::endl;
+//
+//			currentBench.startBench();
+//
+//			std::cout << "Exiting current bench" << std::endl;
 
 			PC13Sig = false;
 		}
