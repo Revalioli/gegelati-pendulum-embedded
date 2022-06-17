@@ -9,15 +9,19 @@
 
 class CurrentBench: public Bench {
 
-	CurrentMonitor monitor;
+	CurrentMonitor * monitor;
 
+	const bool destroyMonitor;
 
 public:
 
-
+	/// Constructor using its own CurrentMonitor instance
 	CurrentBench(void (*fun)(void), INA219_t * ina219t, TIM_HandleTypeDef * tim);
 
-	virtual ~CurrentBench() {};
+	/// Constructor using an external CurrentMonitor object
+	CurrentBench(void (*fun)(void), CurrentMonitor * monitor);
+
+	virtual ~CurrentBench();
 
 	virtual void startBench() override;
 };
