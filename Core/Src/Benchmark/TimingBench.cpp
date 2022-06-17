@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <iostream>
 #include "main.h"
+#include "TimeUnit.h"
 
 TimingBench::TimingBench(void (*fun)(void), TIM_HandleTypeDef * timer, int nbAttempts, TimeUnit unit, float unitMultiplier)
 		: Bench(fun), tim(timer), timerUnit(unit), timerMultiplier(unitMultiplier), nbAttempts(nbAttempts), result(-1)

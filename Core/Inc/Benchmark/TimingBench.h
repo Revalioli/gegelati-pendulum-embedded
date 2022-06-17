@@ -6,13 +6,8 @@
 #include <vector>
 
 #include "Bench.h"
+#include "TimeUnit.h"
 
-
-enum class TimeUnit {
-	Seconds,
-	Milliseconds,
-	Microseconds
-};
 
 class TimingBench : public Bench {
 
