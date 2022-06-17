@@ -31,6 +31,7 @@
 #include "PendulumEnvironment.h"
 #include "CurrentMonitor.h"
 #include "TimingBench.h"
+#include "CurrentBench.h"
 #include "ina219.h"
 extern "C" {
 	#include "pendulum_program.h"
@@ -89,6 +90,7 @@ void SystemClock_Config(void);
 
 void inferenceBenchWrapper(void);
 void currentMeasurementTimingBenchWrappe(void);
+void inferenceCurrentBenchWrapper(void);
 
 /* USER CODE END PFP */
 
@@ -151,20 +153,27 @@ int main(void)
 
 	/* === Current monitoring === */
 
-	CurrentMonitor monitor(&ina219t, &htim7);
+	// CurrentMonitor monitor(&ina219t, &htim7);
 	// monitor.makeActive();
 
 
 	/* === Timing Benchmark === */
-	int nb;
-	std::cout << "Enter number of attempts for benchmark" << std::endl;
-	scanf("%d\n", &nb);
-
-	// TimingBench benchInference(inferenceBenchWrapper, &htim5, nb, TimeUnit::Milliseconds, 0.001f);
+//	int nb;
+//	std::cout << "Enter number of attempts for benchmark" << std::endl;
+//	scanf("%d\n", &nb);
+//
+//	TimingBench benchInference(inferenceBenchWrapper, &htim5, nb, TimeUnit::Milliseconds, 0.001f);
 	pendulum_ptr = &pendulum;
+//
+//	TimingBench benchRecordCurrent(currentMeasurementTimingBenchWrappe, &htim5, nb, TimeUnit::Microseconds, 1.f);
+//	monitor_ptr = &monitor;
 
-	TimingBench benchRecordCurrent(currentMeasurementTimingBenchWrappe, &htim5, nb, TimeUnit::Microseconds, 1.f);
-	monitor_ptr = &monitor;
+	CurrentBench currentBench(inferenceCurrentBenchWrapper, &ina219t, &htim7);
+
+
+	/* === Current Benchmark === */
+
+
 
   /* USER CODE END 2 */
 
@@ -187,12 +196,21 @@ int main(void)
 
 
 			// CurrentMonitor record timing
-			std::cout << "Starting timing bench" << std::endl;
+//			std::cout << "Starting timing bench" << std::endl;
+//
+//			benchRecordCurrent.startBench();
+//			benchRecordCurrent.printResult();
+//
+//			std::cout << "Exiting timing bench" << std::endl;
 
-			benchRecordCurrent.startBench();
-			benchRecordCurrent.printResult();
 
-			std::cout << "Exiting timing bench" << std::endl;
+			// Inference current bench
+			std::cout << "Starting current bench" << std::endl;
+
+			currentBench.startBench();
+
+			std::cout << "Exiting current bench" << std::endl;
+
 
 			PC13Sig = false;
 		}
@@ -266,6 +284,12 @@ void inferenceBenchWrapper(void){
 
 void currentMeasurementTimingBenchWrappe(void){
 	monitor_ptr->recordCurrent();
+}
+
+void inferenceCurrentBenchWrapper(void){
+	seed = HAL_GetTick();
+	pendulum_ptr->reset(seed);
+	pendulum_ptr->startInference((int)nbActions);
 }
 
 /* USER CODE END 4 */
