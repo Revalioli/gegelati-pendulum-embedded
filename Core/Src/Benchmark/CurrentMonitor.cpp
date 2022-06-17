@@ -10,7 +10,8 @@
 
 CurrentMonitor* CurrentMonitor::activeMonitor = nullptr;
 
-CurrentMonitor::CurrentMonitor(INA219_t * ina219t, TIM_HandleTypeDef * tim) : currentHistory{0}, currentHistoryIdx(0), averageCurrent(0.0), ina219t(ina219t), timer(tim) {}
+CurrentMonitor::CurrentMonitor(INA219_t * ina219t, TIM_HandleTypeDef * tim)
+		: currentHistory{0}, currentHistoryIdx(0), averageCurrent(0.0), ina219t(ina219t), timer(tim), flushWhenFull(true) {}
 
 
 void CurrentMonitor::clearHistory(){
@@ -36,9 +37,17 @@ void CurrentMonitor::recordCurrent(){
 			averageCurrent += currentHistory[i];
 
 		averageCurrent = averageCurrent / CURRENT_HISTORY_SIZE;
+
+
+		if(this->flushWhenFull){
+			// Send all data to stdout
+			std::cout << "Flush CurrentMonitor History" << std::endl;
+			for(int i = 0; i < CURRENT_HISTORY_SIZE; i++)
+				std::cout << currentHistory[i] << std::endl;
+		}
+
 	}
 
-	// std::cout << current << std::endl;
 
 }
 
@@ -53,6 +62,13 @@ void CurrentMonitor::makeActive(){
 	// Start timer for auto measurement
 	if(timer != nullptr)
 		HAL_TIM_Base_Start_IT(timer);
+}
+
+void CurrentMonitor::noActiveMonitor(){
+	if(CurrentMonitor::activeMonitor != nullptr && CurrentMonitor::activeMonitor->timer != nullptr)
+		HAL_TIM_Base_Stop_IT(CurrentMonitor::activeMonitor->timer);
+
+	CurrentMonitor::activeMonitor = nullptr;
 }
 
 
