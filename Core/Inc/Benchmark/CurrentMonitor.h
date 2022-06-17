@@ -43,6 +43,9 @@ class CurrentMonitor {
 
 public:
 
+	/// True if the currentHistory must be flushed into stdout when full
+	bool flushWhenFull;
+
 	/**
 	 * \brief Basic constructor
 	 *
@@ -55,13 +58,15 @@ public:
     /// Clears the current measurement history
     void clearHistory();
 
-    /**
-     * \brief Retrieve from the ina219t the current
-     */
+    /// Fetches and stores the current value from the INA219
     void recordCurrent();
 
     /// Sets this CurrentMonitor as the activeMonitor and starts auto measurement using its associated timer
     void makeActive();
+
+
+    /// Deactivate the active monitor
+    static void noActiveMonitor();
 
 };
 
