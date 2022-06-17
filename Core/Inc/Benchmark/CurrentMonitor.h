@@ -22,6 +22,7 @@ class CurrentMonitor {
 	static const int CURRENT_HISTORY_SIZE = 50;	// Default = 100 --> 800 bytes
 
 
+	/* === Results === */
 
 	/// Current measurements history circular buffer
 	double currentHistory[CURRENT_HISTORY_SIZE];
@@ -32,6 +33,9 @@ class CurrentMonitor {
 	/// Last compute averageCurrent
 	double averageCurrent;
 	
+
+	/* === Peripherals ==== */
+
 	/// ina219 handler to be used for current measurement
 	INA219_t * ina219t;
 
