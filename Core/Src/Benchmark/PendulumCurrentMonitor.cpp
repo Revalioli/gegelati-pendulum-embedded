@@ -3,18 +3,23 @@
 #include <iostream>
 
 PendulumCurrentMonitor::PendulumCurrentMonitor(INA219_t * ina219t, PendulumEnvironment& env, TIM_HandleTypeDef * tim)
-		: CurrentMonitor(ina219t, tim), env(env) {}
+		: INA219Monitor(ina219t, tim), env(env) {}
 
 void PendulumCurrentMonitor::record() {
 
-	this->frameRecord[this->currentHistoryIdx] = env.getCurrentStep();
+	this->frameRecord[this->historyIdx] = env.getCurrentStep();
 
-	CurrentMonitor::record();
+	INA219Monitor::record();
 }
 
 void PendulumCurrentMonitor::flushHistory() {
 
-	for(int i = 0; i < this->currentHistoryIdx; i++)
-		std::cout << "Step : " << this->frameRecord[i] << ", Current : " << this->currentHistory[i] << std::endl;
+	for(int i = 0; i < this->historyIdx; i++){
+		std::cout << this->frameRecord[i] << '\t'
+		<< this->currentHistory[i]  << '\t'
+		<< this->powerHistory[i] << std::endl;
+	}
 
 }
+
+void PendulumCurrentMonitor::writeHeader() { std::cout << "Step\tCurrent\tPower" << std::endl; }

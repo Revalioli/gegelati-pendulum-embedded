@@ -23,6 +23,8 @@ void INA219Bench::startBench(){
 
 	this->monitor->clearHistory();
 
+	this->monitor->flushWhenFull = true;
+
 	this->monitor->writeHeader();
 	this->monitor->makeActive();
 	(*this->benchFunction)();

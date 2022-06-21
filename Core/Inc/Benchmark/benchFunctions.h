@@ -3,13 +3,13 @@
 
 #include "main.h"
 #include "PendulumEnvironment.h"
-#include "CurrentMonitor.h"
+#include "INA219Monitor.h"
 
 extern uint32_t seed;
 extern uint16_t nbActions;
 extern uint64_t actions[NB_ACTIONS];
 extern PendulumEnvironment * pendulum_ptr;
-extern CurrentMonitor * monitor_ptr;
+extern INA219Monitor * monitor_ptr;
 
 
 void inferenceBenchWrapper(void);
