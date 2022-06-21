@@ -35,7 +35,7 @@ public:
 
 	virtual ~Monitor() {}
 
-    /// Clears the history
+    /// Clears the measurement history
     virtual void clearHistory() = 0;
 
     /// Sends history values to stdout
