@@ -50,14 +50,8 @@ void TimingBench::printResult(){
 		int minTime = *std::min_element(this->attemptResults.cbegin(), this->attemptResults.cend());
 
 		// Choose unit string
-		char * unitStr;
-
-		switch(this->timerUnit){
-			case(TimeUnit::Seconds) : unitStr = "s"; break;
-			case(TimeUnit::Milliseconds) : unitStr = "ms"; break;
-			case(TimeUnit::Microseconds) : unitStr = "us"; break;
-		}
-
+		const char * unitStr;
+		unitStr = getTimeUnitString(this->timerUnit);
 
 		std::cout << "***** Last TimingBench results *****" << std::endl;
 

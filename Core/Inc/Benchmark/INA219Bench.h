@@ -16,7 +16,7 @@ public:
 
 	/// Constructor using its own CurrentMonitor instance
 	INA219Bench(void (*fun)(void), INA219_t * ina219t, TIM_HandleTypeDef * tim,
-				bool recordCurrent = true, bool recordPower = true);
+			TimeUnit timUnit = TimeUnit::None, float timMultiplier = 0.f, bool recordCurrent = true, bool recordPower = true);
 
 	/// Constructor using an external INA219Monitor object
 	INA219Bench(void (*fun)(void),  INA219Monitor * monitor);

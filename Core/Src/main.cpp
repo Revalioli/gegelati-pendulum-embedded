@@ -172,7 +172,7 @@ int main(void)
 
 	/* === Current Benchmark === */
 
-	PendulumINA219Monitor pendulumMonitor(&ina219t, pendulum, &htim7);
+	PendulumINA219Monitor pendulumMonitor(&ina219t, pendulum, &htim7, TimeUnit::Microseconds, 3.f);
 	INA219Bench inaInferenceBench(inferenceBenchWrapper, &pendulumMonitor);
 
 	std::cout << "Press user push button to start benchmark" << std::endl;
