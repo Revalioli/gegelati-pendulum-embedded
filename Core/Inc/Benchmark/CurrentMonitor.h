@@ -6,14 +6,11 @@
 
 #include "PendulumEnvironment.h"
 
+#include "Monitor.h"
 #include "tim.h"
 #include "ina219.h"
 
-/// Calls the recordCurrent() method of CurrentMonitor::activeMonitor
-extern "C" void recordActiveMonitor();
-
-
-class CurrentMonitor {
+class CurrentMonitor : public Monitor {
 
 protected:
 
@@ -21,21 +18,11 @@ protected:
 	static const int CURRENT_HISTORY_SIZE = 50;	// Default = 100 --> 800 bytes
 
 private:
-
-	/// CurrentMonitor used with global callback
-	static CurrentMonitor* activeMonitor;
-
 	
 	/* === Peripherals ==== */
 
 	/// ina219 handler to be used for current measurement
 	INA219_t * ina219t;
-
-	/// Associated timer for auto measurement
-	TIM_HandleTypeDef * timer;
-
-
-	friend void recordActiveMonitor();
 
 protected:
 
@@ -65,20 +52,13 @@ public:
 	virtual ~CurrentMonitor() {}
 
     /// Clears the current measurement history
-    void clearHistory();
+    void clearHistory() override;
 
     /// Sends currentHistory values up to currentHistoryIdx to stdout
-    virtual void flushHistory();
+    virtual void flushHistory() override;
 
     /// Fetches and stores the current value from the INA219
-    virtual void recordCurrent();
-
-    /// Sets this CurrentMonitor as the activeMonitor and starts auto measurement using its associated timer
-    void makeActive();
-
-
-    /// Deactivate the active monitor
-    static void noActiveMonitor();
+    virtual void record() override;
 
 };
 
