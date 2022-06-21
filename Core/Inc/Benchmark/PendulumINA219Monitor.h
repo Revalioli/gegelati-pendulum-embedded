@@ -1,11 +1,11 @@
-#ifndef INC_BENCHMARK_PENDULUMCURRENTMONITOR_H_
-#define INC_BENCHMARK_PENDULUMCURRENTMONITOR_H_
+#ifndef INC_BENCHMARK_PENDULUMINA219MONITOR_H_
+#define INC_BENCHMARK_PENDULUMINA219MONITOR_H_
 
 #include <INA219Monitor.h>
 
 #include "PendulumEnvironment.h"
 
-class PendulumCurrentMonitor: public INA219Monitor {
+class PendulumINA219Monitor: public INA219Monitor {
 
 	PendulumEnvironment& env;
 
@@ -13,8 +13,8 @@ class PendulumCurrentMonitor: public INA219Monitor {
 	int frameRecord[INA219Monitor::HISTORY_SIZE];
 
 public:
-	PendulumCurrentMonitor(INA219_t * ina219t, PendulumEnvironment& env, TIM_HandleTypeDef * tim = nullptr);
-	virtual ~PendulumCurrentMonitor() {};
+	PendulumINA219Monitor(INA219_t * ina219t, PendulumEnvironment& env, TIM_HandleTypeDef * tim = nullptr);
+	virtual ~PendulumINA219Monitor() {};
 	
 	virtual void record() override;
 
@@ -23,4 +23,4 @@ public:
 	virtual void writeHeader() override;
 };
 
-#endif /* INC_BENCHMARK_PENDULUMCURRENTMONITOR_H_ */
+#endif /* INC_BENCHMARK_PENDULUMINA219MONITOR_H_ */
