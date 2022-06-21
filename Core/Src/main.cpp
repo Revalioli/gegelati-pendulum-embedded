@@ -138,6 +138,7 @@ int main(void)
 	std::vector<double> availableAction = {0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1.0};
 	PendulumEnvironment pendulum(availableAction);
 	in1 = pendulum.currentState;
+	pendulum_ptr = &pendulum;	// For benchmark
 
 	/* === INA219 === */
 
@@ -154,19 +155,15 @@ int main(void)
 
 	/* === Current monitoring === */
 
-	 PendulumINA219Monitor cMonitor(&ina219t, pendulum, &htim7);
-//	 cMonitor.makeActive();
-	 INA219Monitor inaMonitor(&ina219t, &htim7);
-//	 inaMonitor.writeHeader();
-//	 inaMonitor.makeActive();
+
 
 	/* === Timing Benchmark === *///
 	TimingBench benchInference(inferenceBenchWrapper, &htim5, 15, TimeUnit::Milliseconds, 0.001f);
-	pendulum_ptr = &pendulum;
 
+	INA219Monitor timingRecordMonitor(&ina219t, &htim7);
 	TimingBench benchRecordCurrent(currentMeasurementTimingBenchWrappe, &htim5, 100, TimeUnit::Microseconds, 1.f);
-	inaMonitor.flushWhenFull = false;
-	monitor_ptr = &inaMonitor;
+	timingRecordMonitor.flushWhenFull = false;
+	monitor_ptr = &timingRecordMonitor;
 //
 //	for(int i = 0; i < NB_ACTIONS; i++)
 //		actions[i] = rand() % 15;
@@ -175,7 +172,8 @@ int main(void)
 
 	/* === Current Benchmark === */
 
-	INA219Bench inaInferenceBench(inferenceBenchWrapper, &cMonitor);
+	PendulumINA219Monitor pendulumMonitor(&ina219t, pendulum, &htim7);
+	INA219Bench inaInferenceBench(inferenceBenchWrapper, &pendulumMonitor);
 
 	std::cout << "Press user push button to start benchmark" << std::endl;
 

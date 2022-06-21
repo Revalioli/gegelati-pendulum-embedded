@@ -19,6 +19,7 @@ void PendulumINA219Monitor::flushHistory() {
 		<< this->powerHistory[i] << std::endl;
 	}
 
+	this->historyIdx = 0;
 }
 
 void PendulumINA219Monitor::writeHeader() { std::cout << "Step\tCurrent\tPower" << std::endl; }
