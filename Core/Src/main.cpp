@@ -29,9 +29,9 @@
 #include <vector>
 #include <iostream>
 #include "PendulumEnvironment.h"
-#include "PendulumCurrentMonitor.h"
 #include "INA219Monitor.h"
 #include "INA219Bench.h"
+#include "PendulumINA219Monitor.h"
 #include "TimingBench.h"
 #include "benchFunctions.h"
 #include "ina219.h"
@@ -154,7 +154,7 @@ int main(void)
 
 	/* === Current monitoring === */
 
-	 PendulumCurrentMonitor cMonitor(&ina219t, pendulum, &htim7);
+	 PendulumINA219Monitor cMonitor(&ina219t, pendulum, &htim7);
 //	 cMonitor.makeActive();
 	 INA219Monitor inaMonitor(&ina219t, &htim7);
 //	 inaMonitor.writeHeader();
@@ -175,7 +175,7 @@ int main(void)
 
 	/* === Current Benchmark === */
 
-	INA219Bench inaInferenceBench(inferenceBenchWrapper, &inaMonitor);
+	INA219Bench inaInferenceBench(inferenceBenchWrapper, &cMonitor);
 
 	std::cout << "Press user push button to start benchmark" << std::endl;
 
