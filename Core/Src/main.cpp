@@ -33,6 +33,7 @@
 #include "PendulumCurrentMonitor.h"
 #include "TimingBench.h"
 #include "CurrentBench.h"
+#include "benchFunctions.h"
 #include "ina219.h"
 extern "C" {
 	#include "pendulum_program.h"
@@ -47,7 +48,6 @@ extern "C" {
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define NB_ACTIONS 50
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -93,12 +93,6 @@ extern "C" {
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
-void inferenceBenchWrapper(void);
-void currentMeasurementTimingBenchWrappe(void);
-void environmentEvolutionTimingBenchWrapper(void);
-void inferenceCurrentBenchWrapper(void);
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -160,28 +154,27 @@ int main(void)
 
 	/* === Current monitoring === */
 
-//	 CurrentMonitor monitor(&ina219t, &htim7);
+	 CurrentMonitor monitor(&ina219t, &htim7);
 //	 monitor.makeActive();
 	 PendulumCurrentMonitor cMonitor(&ina219t, pendulum, &htim7);
 //	 cMonitor.makeActive();
 
 
 	/* === Timing Benchmark === *///
-//	TimingBench benchInference(inferenceBenchWrapper, &htim5, 15, TimeUnit::Milliseconds, 0.001f);
+	TimingBench benchInference(inferenceBenchWrapper, &htim5, 15, TimeUnit::Milliseconds, 0.001f);
 	pendulum_ptr = &pendulum;
 
-//	TimingBench benchRecordCurrent(currentMeasurementTimingBenchWrappe, &htim5, 100, TimeUnit::Microseconds, 1.f);
-//	monitor.flushWhenFull = false;
-//	monitor_ptr = &monitor;
+	TimingBench benchRecordCurrent(currentMeasurementTimingBenchWrappe, &htim5, 100, TimeUnit::Microseconds, 1.f);
+	monitor.flushWhenFull = false;
+	monitor_ptr = &monitor;
 
 	for(int i = 0; i < NB_ACTIONS; i++)
 		actions[i] = rand() % 15;
 
-//	TimingBench benchEvolution(environmentEvolutionTimingBenchWrapper, &htim5, 15, TimeUnit::Milliseconds, 0.001f);
+	TimingBench benchEvolution(environmentEvolutionTimingBenchWrapper, &htim5, 15, TimeUnit::Milliseconds, 0.001f);
 
 	/* === Current Benchmark === */
 
-//	CurrentBench currentBench(inferenceCurrentBenchWrapper, &ina219t, &htim7);
 	CurrentBench currentBench(inferenceBenchWrapper, &cMonitor);
 
 	std::cout << "Press user push button to start benchmark" << std::endl;
@@ -196,21 +189,21 @@ int main(void)
 		if(PC13Sig){
 
 			// Inference timing bench
-//			std::cout << "===> Starting inference timing bench" << std::endl;
-//
-//			benchInference.startBench();
-//			benchInference.printResult();
-//
-//			std::cout << "===> Exiting inference timing bench" << std::endl;
+			std::cout << "===> Starting inference timing bench" << std::endl;
+
+			benchInference.startBench();
+			benchInference.printResult();
+
+			std::cout << "===> Exiting inference timing bench" << std::endl;
 
 
 			// CurrentMonitor record timing
-//			std::cout << "Starting timing bench" << std::endl;
-//
-//			benchRecordCurrent.startBench();
-//			benchRecordCurrent.printResult();
-//
-//			std::cout << "Exiting timing bench" << std::endl;
+			std::cout << "Starting timing bench" << std::endl;
+
+			benchRecordCurrent.startBench();
+			benchRecordCurrent.printResult();
+
+			std::cout << "Exiting timing bench" << std::endl;
 
 
 			// Inference current bench
@@ -222,12 +215,12 @@ int main(void)
 
 			std::cout << "Exiting current bench" << std::endl;
 
-//			std::cout << "===> Starting environment timing bench" << std::endl;
-//
-//			benchEvolution.startBench();
-//			benchEvolution.printResult();
-//
-//			std::cout << "===> Exiting inference timing bench" << std::endl;
+			std::cout << "===> Starting environment timing bench" << std::endl;
+
+			benchEvolution.startBench();
+			benchEvolution.printResult();
+
+			std::cout << "===> Exiting inference timing bench" << std::endl;
 
 			PC13Sig = false;
 		}
@@ -289,36 +282,6 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-
-// Bench wrappers
-
-void inferenceBenchWrapper(void){
-	// Setup
-	seed = HAL_GetTick();
-	pendulum_ptr->reset(seed);
-	pendulum_ptr->startInference((int)nbActions);
-}
-
-void currentMeasurementTimingBenchWrappe(void){
-	monitor_ptr->record();
-}
-
-void environmentEvolutionTimingBenchWrapper(void){
-	seed = HAL_GetTick();
-	pendulum_ptr->reset(seed);
-	for(int i = 0; i < 20; i++){
-		for(int j = 0; j < NB_ACTIONS; j++){
-			pendulum_ptr->doAction(actions[j]);
-		}
-	}
-}
-
-void inferenceCurrentBenchWrapper(void){
-	seed = HAL_GetTick();
-	pendulum_ptr->reset(seed);
-	pendulum_ptr->startInference((int)nbActions);
-}
-
 /* USER CODE END 4 */
 
 /**
