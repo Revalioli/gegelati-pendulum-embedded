@@ -16,7 +16,7 @@ public:
 	PendulumCurrentMonitor(INA219_t * ina219t, PendulumEnvironment& env, TIM_HandleTypeDef * tim = nullptr);
 	virtual ~PendulumCurrentMonitor() {};
 	
-	virtual void recordCurrent() override;
+	virtual void record() override;
 
 	virtual void flushHistory() override;
 };

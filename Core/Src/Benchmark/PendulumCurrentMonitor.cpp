@@ -5,11 +5,11 @@
 PendulumCurrentMonitor::PendulumCurrentMonitor(INA219_t * ina219t, PendulumEnvironment& env, TIM_HandleTypeDef * tim)
 		: CurrentMonitor(ina219t, tim), env(env) {}
 
-void PendulumCurrentMonitor::recordCurrent() {
+void PendulumCurrentMonitor::record() {
 
 	this->frameRecord[this->currentHistoryIdx] = env.getCurrentStep();
 
-	CurrentMonitor::recordCurrent();
+	CurrentMonitor::record();
 }
 
 void PendulumCurrentMonitor::flushHistory() {

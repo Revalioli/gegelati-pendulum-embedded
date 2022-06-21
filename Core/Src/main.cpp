@@ -47,6 +47,7 @@ extern "C" {
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define NB_ACTIONS 50
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -65,6 +66,8 @@ int startedInference = 0;
 int endedInference = 0;
 int debug[10];
 
+uint64_t actions[NB_ACTIONS];
+
 // === Pendulum global access and parameters === */
 
 PendulumEnvironment * pendulum_ptr;
@@ -74,10 +77,12 @@ CurrentMonitor * monitor_ptr;
 // === Current measurement ===
 
 INA219_t ina219t;
-uint32_t seed = 0;
+const char logStart[] = "##### Log Start #####";
+const char logEnd[] = "##### Log End #####";
 
 // === TPG ===
 
+uint32_t seed = 0;
 extern "C" {
 	extern double* in1;
 }
@@ -91,6 +96,7 @@ void SystemClock_Config(void);
 
 void inferenceBenchWrapper(void);
 void currentMeasurementTimingBenchWrappe(void);
+void environmentEvolutionTimingBenchWrapper(void);
 void inferenceCurrentBenchWrapper(void);
 
 /* USER CODE END PFP */
@@ -156,28 +162,29 @@ int main(void)
 
 //	 CurrentMonitor monitor(&ina219t, &htim7);
 //	 monitor.makeActive();
-//	 PendulumCurrentMonitor cMonitor(&ina219t, pendulum, &htim7);
+	 PendulumCurrentMonitor cMonitor(&ina219t, pendulum, &htim7);
 //	 cMonitor.makeActive();
 
 
-	/* === Timing Benchmark === */
-//	int nb;
-//	std::cout << "Enter number of attempts for benchmark" << std::endl;
-//	scanf("%d\n", &nb);
-//
-//	TimingBench benchInference(inferenceBenchWrapper, &htim5, nb, TimeUnit::Milliseconds, 0.001f);
+	/* === Timing Benchmark === *///
+//	TimingBench benchInference(inferenceBenchWrapper, &htim5, 15, TimeUnit::Milliseconds, 0.001f);
 	pendulum_ptr = &pendulum;
 
 //	TimingBench benchRecordCurrent(currentMeasurementTimingBenchWrappe, &htim5, 100, TimeUnit::Microseconds, 1.f);
 //	monitor.flushWhenFull = false;
 //	monitor_ptr = &monitor;
 
-//	CurrentBench currentBench(inferenceCurrentBenchWrapper, &ina219t, &htim7);
-//	CurrentBench currentBench(inferenceBenchWrapper, &cMonitor);
+	for(int i = 0; i < NB_ACTIONS; i++)
+		actions[i] = rand() % 15;
+
+//	TimingBench benchEvolution(environmentEvolutionTimingBenchWrapper, &htim5, 15, TimeUnit::Milliseconds, 0.001f);
 
 	/* === Current Benchmark === */
 
+//	CurrentBench currentBench(inferenceCurrentBenchWrapper, &ina219t, &htim7);
+	CurrentBench currentBench(inferenceBenchWrapper, &cMonitor);
 
+	std::cout << "Press user push button to start benchmark" << std::endl;
 
   /* USER CODE END 2 */
 
@@ -189,14 +196,12 @@ int main(void)
 		if(PC13Sig){
 
 			// Inference timing bench
-//			std::cout << "Starting timing bench" << std::endl;
+//			std::cout << "===> Starting inference timing bench" << std::endl;
 //
 //			benchInference.startBench();
 //			benchInference.printResult();
 //
-//			std::cout << "Exiting timing bench" << std::endl;
-//
-//			PC13Sig = false;
+//			std::cout << "===> Exiting inference timing bench" << std::endl;
 
 
 			// CurrentMonitor record timing
@@ -209,11 +214,20 @@ int main(void)
 
 
 			// Inference current bench
-//			std::cout << "Starting current bench" << std::endl;
+			std::cout << "Starting current bench" << std::endl;
+
+			std::cout << logStart << std::endl;
+			currentBench.startBench();
+			std::cout << logEnd << std::endl;
+
+			std::cout << "Exiting current bench" << std::endl;
+
+//			std::cout << "===> Starting environment timing bench" << std::endl;
 //
-//			currentBench.startBench();
+//			benchEvolution.startBench();
+//			benchEvolution.printResult();
 //
-//			std::cout << "Exiting current bench" << std::endl;
+//			std::cout << "===> Exiting inference timing bench" << std::endl;
 
 			PC13Sig = false;
 		}
@@ -286,7 +300,17 @@ void inferenceBenchWrapper(void){
 }
 
 void currentMeasurementTimingBenchWrappe(void){
-	monitor_ptr->recordCurrent();
+	monitor_ptr->record();
+}
+
+void environmentEvolutionTimingBenchWrapper(void){
+	seed = HAL_GetTick();
+	pendulum_ptr->reset(seed);
+	for(int i = 0; i < 20; i++){
+		for(int j = 0; j < NB_ACTIONS; j++){
+			pendulum_ptr->doAction(actions[j]);
+		}
+	}
 }
 
 void inferenceCurrentBenchWrapper(void){
