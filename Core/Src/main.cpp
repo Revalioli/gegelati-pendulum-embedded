@@ -29,12 +29,10 @@
 #include <vector>
 #include <iostream>
 #include "PendulumEnvironment.h"
-#include "CurrentMonitor.h"
 #include "PendulumCurrentMonitor.h"
 #include "INA219Monitor.h"
 #include "INA219Bench.h"
 #include "TimingBench.h"
-#include "CurrentBench.h"
 #include "benchFunctions.h"
 #include "ina219.h"
 extern "C" {
@@ -74,7 +72,7 @@ uint64_t actions[NB_ACTIONS];
 
 PendulumEnvironment * pendulum_ptr;
 uint16_t nbActions = 1000;	// Number of actions per inference
-CurrentMonitor * monitor_ptr;
+INA219Monitor * monitor_ptr;
 
 // === Current measurement ===
 
@@ -156,21 +154,19 @@ int main(void)
 
 	/* === Current monitoring === */
 
-//	 CurrentMonitor monitor(&ina219t, &htim7);
-//	 monitor.makeActive();
-//	 PendulumCurrentMonitor cMonitor(&ina219t, pendulum, &htim7);
+	 PendulumCurrentMonitor cMonitor(&ina219t, pendulum, &htim7);
 //	 cMonitor.makeActive();
-//	 INA219Monitor inaMonitor(&ina219t, &htim7);
+	 INA219Monitor inaMonitor(&ina219t, &htim7);
 //	 inaMonitor.writeHeader();
 //	 inaMonitor.makeActive();
 
 	/* === Timing Benchmark === *///
-//	TimingBench benchInference(inferenceBenchWrapper, &htim5, 15, TimeUnit::Milliseconds, 0.001f);
+	TimingBench benchInference(inferenceBenchWrapper, &htim5, 15, TimeUnit::Milliseconds, 0.001f);
 	pendulum_ptr = &pendulum;
-//
-//	TimingBench benchRecordCurrent(currentMeasurementTimingBenchWrappe, &htim5, 100, TimeUnit::Microseconds, 1.f);
-//	monitor.flushWhenFull = false;
-//	monitor_ptr = &monitor;
+
+	TimingBench benchRecordCurrent(currentMeasurementTimingBenchWrappe, &htim5, 100, TimeUnit::Microseconds, 1.f);
+	inaMonitor.flushWhenFull = false;
+	monitor_ptr = &inaMonitor;
 //
 //	for(int i = 0; i < NB_ACTIONS; i++)
 //		actions[i] = rand() % 15;
@@ -179,8 +175,7 @@ int main(void)
 
 	/* === Current Benchmark === */
 
-//	CurrentBench currentBench(inferenceBenchWrapper, &cMonitor);
-	INA219Bench inaInferenceBench(inferenceBenchWrapper, &ina219t, &htim7);
+	INA219Bench inaInferenceBench(inferenceBenchWrapper, &inaMonitor);
 
 	std::cout << "Press user push button to start benchmark" << std::endl;
 
@@ -194,31 +189,22 @@ int main(void)
 		if(PC13Sig){
 
 			// Inference timing bench
-//			std::cout << "===> Starting inference timing bench" << std::endl;
-//
-//			benchInference.startBench();
-//			benchInference.printResult();
-//
-//			std::cout << "===> Exiting inference timing bench" << std::endl;
+			std::cout << "===> Starting inference timing bench" << std::endl;
+
+			benchInference.startBench();
+			benchInference.printResult();
+
+			std::cout << "===> Exiting inference timing bench" << std::endl;
 
 
 			// CurrentMonitor record timing
-//			std::cout << "Starting timing bench" << std::endl;
-//
-//			benchRecordCurrent.startBench();
-//			benchRecordCurrent.printResult();
-//
-//			std::cout << "Exiting timing bench" << std::endl;
+			std::cout << "Starting timing bench" << std::endl;
 
+			benchRecordCurrent.startBench();
+			benchRecordCurrent.printResult();
 
-			// Inference current bench
-//			std::cout << "Starting current bench" << std::endl;
-//
-//			std::cout << logStart << std::endl;
-//			currentBench.startBench();
-//			std::cout << logEnd << std::endl;
-//
-//			std::cout << "Exiting current bench" << std::endl;
+			std::cout << "Exiting timing bench" << std::endl;
+
 
 			// Inference ina bench
 			std::cout << "Starting current bench" << std::endl;
