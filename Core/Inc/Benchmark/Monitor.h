@@ -2,6 +2,7 @@
 #define SRC_BENCHMARK_MONITOR_H_
 
 #include "main.h"
+#include "TimeUnit.h"
 
 /// Global callback that calls the record() method of Monitor::activeMonitor
 extern "C" void recordActiveMonitor();
@@ -18,8 +19,19 @@ class Monitor {
 	/// Monitor used with global callback
 	static Monitor * activeMonitor;
 
+
+	/* === Timer === */
+
 	/// Associated timer for global callback
 	TIM_HandleTypeDef * timer;
+
+protected:
+	/// Timer base time unit
+	TimeUnit timerUnit;
+
+	/// Timer base time miltiplier
+	float timerMultiplier;
+
 
 	friend void recordActiveMonitor();
 
@@ -28,10 +40,12 @@ public:
 	/**
 	 * \brief Basic constructor
 	 *
-	 * \param[out] TIM_HandleTypeDef * the timer to be used for calling recordActiveMonitor() when this is the activeMonitor,
+	 * \param[out] TIM_HandleTypeDef *: the timer to be used for calling recordActiveMonitor() when this is the activeMonitor,
 	 * nullptr if you don't want to use this callback.
+	 * \param[in] timUnit: the TimeUnit corresponding to the timer base time step
+	 * \param[in] timMultiplier: multiplier to be applied on timUnit to get the timer base time step
 	 */
-	Monitor(TIM_HandleTypeDef * tim = nullptr);
+	Monitor(TIM_HandleTypeDef * tim = nullptr, TimeUnit timUnit = TimeUnit::None, float timMultiplier = 0.f);
 
 	virtual ~Monitor() {}
 

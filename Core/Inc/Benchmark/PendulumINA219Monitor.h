@@ -13,7 +13,7 @@ class PendulumINA219Monitor: public INA219Monitor {
 	int frameRecord[INA219Monitor::HISTORY_SIZE];
 
 public:
-	PendulumINA219Monitor(INA219_t * ina219t, PendulumEnvironment& env, TIM_HandleTypeDef * tim = nullptr);
+	PendulumINA219Monitor(INA219_t * ina219t, PendulumEnvironment& env, TIM_HandleTypeDef * tim = nullptr, TimeUnit timUnit = TimeUnit::None, float timMultiplier = 0.f);
 	virtual ~PendulumINA219Monitor() {};
 	
 	virtual void record() override;

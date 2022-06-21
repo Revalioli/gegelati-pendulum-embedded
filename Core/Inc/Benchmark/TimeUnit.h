@@ -4,7 +4,10 @@
 enum class TimeUnit {
 	Seconds,
 	Milliseconds,
-	Microseconds
+	Microseconds,
+	None
 };
+
+const char * getTimeUnitString(TimeUnit unit);
 
 #endif

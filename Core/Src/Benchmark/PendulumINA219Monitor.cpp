@@ -1,8 +1,8 @@
 #include <PendulumINA219Monitor.h>
 #include <iostream>
 
-PendulumINA219Monitor::PendulumINA219Monitor(INA219_t * ina219t, PendulumEnvironment& env, TIM_HandleTypeDef * tim)
-		: INA219Monitor(ina219t, tim), env(env) {}
+PendulumINA219Monitor::PendulumINA219Monitor(INA219_t * ina219t, PendulumEnvironment& env, TIM_HandleTypeDef * tim, TimeUnit timUnit, float timMultiplier)
+		: INA219Monitor(ina219t, tim, timUnit, timMultiplier), env(env) {}
 
 void PendulumINA219Monitor::record() {
 
@@ -22,4 +22,7 @@ void PendulumINA219Monitor::flushHistory() {
 	this->historyIdx = 0;
 }
 
-void PendulumINA219Monitor::writeHeader() { std::cout << "Step\tCurrent\tPower" << std::endl; }
+void PendulumINA219Monitor::writeHeader() {
+	std::cout << "TimeUnit : " << getTimeUnitString(this->timerUnit) << "\tTimerMultiplier : " << this->timerMultiplier << std::endl;
+	std::cout << "Step\tCurrent\tPower" << std::endl;
+}

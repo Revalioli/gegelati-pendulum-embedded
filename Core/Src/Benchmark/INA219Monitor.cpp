@@ -3,9 +3,10 @@
 #include <cmath>
 #include <iostream>
 
-INA219Monitor::INA219Monitor(INA219_t * ina219t, TIM_HandleTypeDef * tim, bool recordCurrent, bool recordPower)
-	: Monitor(tim), currentHistory{0.0}, powerHistory{0}, historyIdx(0),
-	  recordCurrent(recordCurrent), recordPower(recordPower), ina219t(ina219t), flushWhenFull(true) {}
+INA219Monitor::INA219Monitor(INA219_t * ina219t, TIM_HandleTypeDef * tim,
+		TimeUnit timUnit, float timMultiplier, bool recordCurrent, bool recordPower)
+				: Monitor(tim, timUnit, timMultiplier), currentHistory{0.0}, powerHistory{0}, historyIdx(0),
+				  recordCurrent(recordCurrent), recordPower(recordPower), ina219t(ina219t), flushWhenFull(true) {}
 
 void INA219Monitor::clearHistory(){
 	this->historyIdx = 0;
@@ -44,5 +45,8 @@ void INA219Monitor::record(){
 }
 
 
-void INA219Monitor::writeHeader(){ std::cout << "Current\tPower" << std::endl; }
+void INA219Monitor::writeHeader(){
+	std::cout << "TimeUnit : " << getTimeUnitString(this->timerUnit) << "\tTimerMultiplier : " << this->timerMultiplier << std::endl;
+	std::cout << "Current\tPower" << std::endl;
+}
 
