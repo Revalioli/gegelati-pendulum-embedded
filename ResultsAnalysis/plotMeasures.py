@@ -1,18 +1,20 @@
 #!/usr/bin/python
 
-from audioop import minmax
 import math
 import numpy as np
 import matplotlib as mp
 import matplotlib.pyplot as plt
 
-from matplotlib.widgets import Cursor 
-
 import sys
 import re
 
+
+fileName = ""
 if len(sys.argv) != 2 :
-    sys.exit("This script must have only one argument for the file with the current measures")
+    fileName = "../picocom.log"
+    # sys.exit("This script must have only one argument for the file with the current measures")
+else:
+    fileName = sys.argv[1]
 
 # === Reading variables ===
 logStart = "##### Log Start #####"
@@ -31,7 +33,7 @@ currents = []
 power = []
 pendulumSteps = []
 
-file = open(sys.argv[1])    # Open read only
+file = open(fileName)    # Open read only
 
 for idx, line in enumerate(file):
     line = line.rstrip('\n')
@@ -77,26 +79,31 @@ time = [ (i+1) * timeMultiplier for i in range(len(currents)) ]
 class SnaptoCursor(object):
     def __init__(self, ax, x, y):
         self.ax = ax
-        self.ly = ax.axvline(color='k', alpha=0.2)  # the vert line
-        self.marker, = ax.plot([0],[0], marker="o", color="crimson", zorder=3) 
-        self.x = x
-        self.y = y
+        self.ly = ax.axvline(color='k', alpha=0.2)  # The vertical line
+        self.marker, = ax.plot([0],[0], marker="o", color="crimson", zorder=3)  # Create a single point line2D as marker 
+        self.x = x  # x data of the line to be tracked
+        self.y = y  # y data of the line to be tracked
         self.txt = ax.text(0.7, 0.9, None, fontsize = 'medium', fontweight = 'bold')
 
     def mouse_move(self, event):
-        if not event.inaxes: return
-        x, y = event.xdata, event.ydata
-        indx = np.searchsorted(self.x, [x])[0]
+        if not event.inaxes: return     # Do nothing if mouse not on axes
+        mouse_x = event.xdata # Get mouse x cooridnate in the axes
 
-        indx = max(indx, 0)
+        # Find point corresponding to mouse position
+        indx = np.searchsorted(self.x, [mouse_x])[0]
         indx = min(indx, len(self.x)-1)
 
-        x = self.x[indx]
-        y = self.y[indx]
-        self.ly.set_xdata(x)
-        self.marker.set_data([x],[y])
-        self.txt.set_text('x=%1.2f, y=%1.2f' % (x, y))
-        self.txt.set_position((x,y))
+        # Finding point closest to the mouse
+        if indx > 0 and indx < len(self.x)-1:
+            indx = indx if math.dist( [mouse_x], [self.x[indx]] ) < math.dist( [mouse_x], [self.x[indx-1]] ) else indx
+
+        marker_x = self.x[indx]
+        marker_y = self.y[indx]
+
+        self.ly.set_xdata(marker_x)
+        self.marker.set_data([marker_x],[marker_y])
+        self.txt.set_text('x=%1.2f, y=%1.2f' % (marker_x, marker_y))
+        self.txt.set_position((marker_x,marker_y))
         self.ax.figure.canvas.draw_idle()
 
 
@@ -113,8 +120,8 @@ ax2.set_ylabel("Pendulum step")
 l2, = ax2.plot(time, pendulumSteps, color='blue')
 
 # Cursors
-cursor = SnaptoCursor(ax1, [i for i in range(1, len(currents))], currents)
-cursor2 = SnaptoCursor(ax2, [i for i in range(1, len(pendulumSteps))], pendulumSteps)
+cursor = SnaptoCursor(ax1, time, currents)
+cursor2 = SnaptoCursor(ax2, time, pendulumSteps)
 plt.connect('motion_notify_event', cursor.mouse_move)
 plt.connect('motion_notify_event', cursor2.mouse_move)
 
