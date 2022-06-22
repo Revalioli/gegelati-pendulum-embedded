@@ -1,6 +1,11 @@
 # Build directories
-Debug/
-Release/
+PendulumEmbeddedSTMProject/Debug/
+PendulumEmbeddedSTMProject/Release/
 
 # STM32CubeIDE local settings
-.settings/
+PendulumEmbeddedSTMProject/.settings/
+
+# Measurements analysis results files
+
+ResultsAnalysis/Results
+picocom.log
