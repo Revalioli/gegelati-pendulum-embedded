@@ -1,6 +1,7 @@
 # Build directories
 PendulumEmbeddedSTMProject/Debug/
 PendulumEmbeddedSTMProject/Release/
+PendulumEmbeddedSTMProject/ReleaseEnergyBench/
 
 # STM32CubeIDE local settings
 PendulumEmbeddedSTMProject/.settings/
