@@ -1,13 +1,6 @@
+# Build directories
 Debug/
 Release/
 
-# STM32CubeIDe directories
-.cproject
-.mxproject
-.project
+# STM32CubeIDE local settings
 .settings/
-
-PendulumEmbedded Debug.launch
-PendulumEmbedded Release.launch
-STM32F446RETX_FLASH.ld
-STM32F446RETX_RAM.ld
