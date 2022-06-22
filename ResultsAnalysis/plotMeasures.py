@@ -7,14 +7,33 @@ import matplotlib.pyplot as plt
 
 import sys
 import re
+import getopt
+
+# Check and parse script parameters
+
+if len(sys.argv) < 2 or len(sys.argv) > 3 :
+    sys.exit("This script must have only one argument for the file with the current measures")
+
+try:
+    options, remainder = getopt.getopt(sys.argv[2:], "s")
+except getopt.GetoptError as err:
+    print(err)
+    sys.exit(1)
+
+fileName = sys.argv[1]
+outputPng = False
+
+for o, a in options:
+    if o == "-s":
+        outputPng = True
+    else:
+        sys.exit("Unhandled option")
+        
 
 
-fileName = ""
-if len(sys.argv) != 2 :
-    fileName = "../picocom.log"
-    # sys.exit("This script must have only one argument for the file with the current measures")
-else:
-    fileName = sys.argv[1]
+#================
+# === Parsing ===
+#================
 
 # === Reading variables ===
 logStart = "##### Log Start #####"
@@ -27,10 +46,9 @@ skipLine = True
 timeUnit = ""
 timeMultiplier = 1
 
-# === Parsing ===
 
 currents = []
-power = []
+powers = []
 pendulumSteps = []
 
 file = open(fileName)    # Open read only
@@ -54,7 +72,7 @@ for idx, line in enumerate(file):
 
             pendulumSteps.append( int(match.group(1)) )
             currents.append( float(match.group(2)) * 1000 ) # convert A to mA
-            power.append( float(match.group(3)) )   # in W
+            powers.append( float(match.group(3)) )   # in W
             continue
 
         # Parameters line
@@ -70,60 +88,98 @@ for idx, line in enumerate(file):
 
         sys.exit(f"Invalid line format at line {idx+1}")
 
-        
 
 time = [ (i+1) * timeMultiplier for i in range(len(currents)) ]
 
-# === Plot results ===
 
-class SnaptoCursor(object):
-    def __init__(self, ax, x, y):
+
+#=====================
+# === Plot results ===
+#=====================
+
+class AxeCursor(object):
+    def __init__(self, ax, resultField):
         self.ax = ax
         self.ly = ax.axvline(color='k', alpha=0.2)  # The vertical line
-        self.marker, = ax.plot([0],[0], marker="o", color="crimson", zorder=3)  # Create a single point line2D as marker 
-        self.x = x  # x data of the line to be tracked
-        self.y = y  # y data of the line to be tracked
+        self.marker, = ax.plot([0],[0], marker="o", color="crimson", zorder=3)  # Create a single point line2D as marker
+
+        self.xdata, self.ydata = ax.get_lines()[0].get_data()   # Get reference to the data of the first line of the Axes object
+
         self.txt = ax.text(0.7, 0.9, None, fontsize = 'medium', fontweight = 'bold')
+        self.resultField = resultField
 
     def mouse_move(self, event):
         if not event.inaxes: return     # Do nothing if mouse not on axes
         mouse_x = event.xdata # Get mouse x cooridnate in the axes
 
         # Find point corresponding to mouse position
-        indx = np.searchsorted(self.x, [mouse_x])[0]
-        indx = min(indx, len(self.x)-1)
+        indx = np.searchsorted(self.xdata, [mouse_x])[0]
+        indx = min(indx, len(self.xdata)-1)
 
         # Finding point closest to the mouse
-        if indx > 0 and indx < len(self.x)-1:
-            indx = indx if math.dist( [mouse_x], [self.x[indx]] ) < math.dist( [mouse_x], [self.x[indx-1]] ) else indx
+        if indx > 0 and indx < len(self.xdata)-1:
+            indx = indx if math.dist( [mouse_x], [self.xdata[indx]] ) < math.dist( [mouse_x], [self.xdata[indx-1]] ) else indx
 
-        marker_x = self.x[indx]
-        marker_y = self.y[indx]
+        marker_x = self.xdata[indx]
+        marker_y = self.ydata[indx]
 
         self.ly.set_xdata(marker_x)
         self.marker.set_data([marker_x],[marker_y])
         self.txt.set_text('x=%1.2f, y=%1.2f' % (marker_x, marker_y))
         self.txt.set_position((marker_x,marker_y))
-        self.ax.figure.canvas.draw_idle()
 
+        if isinstance(marker_y, np.float):
+            self.resultField.set_text(f"{marker_y:1.3f}")
+        else:
+            self.resultField.set_text(f"{marker_y}")
+        
+        self.ax.figure.canvas.draw_idle()
+        
+
+fig = plt.gcf()
+fig.set_size_inches(12.8, 9.6)
 
 # Current
 ax1 = plt.subplot()
-ax1.set_ylabel("mA")
-l1, = ax1.plot(time, currents, color='red')
+ax1.set_ylabel("mA", color='red')
 ax1.set(ylim=(10.0, 30.0))
 ax1.set_xlabel(f"Elapsed time ({timeUnit})")
+l1, = ax1.plot(time, currents, color='red')
 
 # Pendulum steps
 ax2 = ax1.twinx()
-ax2.set_ylabel("Pendulum step")
+ax2.set_ylabel("Pendulum step", color='blue')
 l2, = ax2.plot(time, pendulumSteps, color='blue')
 
-# Cursors
-cursor = SnaptoCursor(ax1, time, currents)
-cursor2 = SnaptoCursor(ax2, time, pendulumSteps)
-plt.connect('motion_notify_event', cursor.mouse_move)
-plt.connect('motion_notify_event', cursor2.mouse_move)
+# Power
+ax3 = ax1.twinx()
+ax3.spines["right"].set_position(("outward", 60))
+ax3.set(ylim=(0.0, 0.1))
+ax3.set_ylabel("W", color='green')
+l3, = ax3.plot(time, powers, color='green')
 
-plt.legend([l1, l2], ["Current", "Pendulum step"])
-plt.show()
+plt.legend([l1, l2, l3], ["Current", "Pendulum step", "Power"])
+plt.subplots_adjust(right=0.85)
+
+if outputPng:
+    plt.savefig("mpl_export.png")
+else:
+    # Table for cursors
+    t1 = ax1.table( [ ["Current", "0.0"], ["Power", "0.0"], ["Step", "0"] ], cellLoc='center', bbox=[0.0, -0.3, 0.2, 0.2])
+    t1.auto_set_font_size(False)
+    t1.set_fontsize(16)
+    t1[0, 0].get_text().set_color('red')
+    t1[1, 0].get_text().set_color('green')
+    t1[2, 0].get_text().set_color('blue')
+
+    # Cursors
+    cursor = AxeCursor(ax1, t1[0, 1].get_text())
+    cursor2 = AxeCursor(ax2, t1[2, 1].get_text())
+    cursor3 = AxeCursor(ax3, t1[1, 1].get_text())
+    plt.connect('motion_notify_event', cursor.mouse_move)
+    plt.connect('motion_notify_event', cursor2.mouse_move)
+    plt.connect('motion_notify_event', cursor3.mouse_move)
+
+    plt.subplots_adjust(bottom=0.25)
+
+    plt.show()
