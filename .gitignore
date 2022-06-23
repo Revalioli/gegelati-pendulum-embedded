@@ -6,6 +6,9 @@ PendulumEmbeddedSTMProject/ReleaseEnergyBench/
 # STM32CubeIDE local settings
 PendulumEmbeddedSTMProject/.settings/
 
+#TPG CodeGen files
+TPG/
+
 # Measurements analysis results files
 
 ResultsAnalysis/Results

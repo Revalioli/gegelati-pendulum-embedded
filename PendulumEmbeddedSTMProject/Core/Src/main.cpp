@@ -186,32 +186,34 @@ int main(void)
 
 		if(PC13Sig){
 
+			std::cout << "Hello !" << std::endl;
+
 			// Inference timing bench
-			std::cout << "===> Starting inference timing bench" << std::endl;
-
-			benchInference.startBench();
-			benchInference.printResult();
-
-			std::cout << "===> Exiting inference timing bench" << std::endl;
+//			std::cout << "===> Starting inference timing bench" << std::endl;
+//
+//			benchInference.startBench();
+//			benchInference.printResult();
+//
+//			std::cout << "===> Exiting inference timing bench" << std::endl;
 
 
 			// CurrentMonitor record timing
-			std::cout << "Starting timing bench" << std::endl;
-
-			benchRecordCurrent.startBench();
-			benchRecordCurrent.printResult();
-
-			std::cout << "Exiting timing bench" << std::endl;
+//			std::cout << "Starting timing bench" << std::endl;
+//
+//			benchRecordCurrent.startBench();
+//			benchRecordCurrent.printResult();
+//
+//			std::cout << "Exiting timing bench" << std::endl;
 
 
 			// Inference ina bench
-			std::cout << "Starting current bench" << std::endl;
-
-			std::cout << logStart << std::endl;
-			inaInferenceBench.startBench();
-			std::cout << logEnd << std::endl;
-
-			std::cout << "Exiting current bench" << std::endl;
+//			std::cout << "Starting current bench" << std::endl;
+//
+//			std::cout << logStart << std::endl;
+//			inaInferenceBench.startBench();
+//			std::cout << logEnd << std::endl;
+//
+//			std::cout << "Exiting current bench" << std::endl;
 
 
 			// PendulumEnvironment evolution timing bench
