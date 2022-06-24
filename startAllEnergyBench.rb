@@ -55,7 +55,8 @@ puts "Valid TPG subdirectories are #{valid_TPG_directories}"
 # Compiling, flashing on STM32, do inference and analyse results for each TPG
 
 
-resultsFileName = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
+currentTime = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
+resultsFileName =  "#{currentTime}.png"
 
 valid_TPG_directories.each { |tpgDirName|
 
@@ -102,7 +103,7 @@ valid_TPG_directories.each { |tpgDirName|
 
     # === Launching picocom, start inference ===
 
-    logPath = "#{tpgDirName}/picocom.log"
+    logPath = "#{tpgDirName}/#{currentTime}.log"
 
     `rm #{logPath}`
 
@@ -111,7 +112,7 @@ valid_TPG_directories.each { |tpgDirName|
 
     # === Analysing resuts ===
 
-    `ResultsAnalysis/plotMeasures.py #{logPath} -S #{tpgDirName}/#{resultsFileName}.png`
+    `ResultsAnalysis/plotMeasures.py #{logPath} -S #{tpgDirName}/#{resultsFileName}`
     checkExitstatus
 }
 
