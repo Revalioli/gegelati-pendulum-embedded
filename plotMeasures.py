@@ -47,11 +47,11 @@ for o, a in options:
 logStart = "##### Log Start #####"
 logEnd = "##### Log End #####"
 
-floatRegex = "(\d+\.?\d*)"
-integerRegex = "(-?\d+)"
-textRegex = "([a-z]+)"
-lineRegex = f"{integerRegex}\t{floatRegex}\t{floatRegex}"
-paramRegex = f"TimeUnit : {textRegex}\tTimerMultiplier : {floatRegex}"
+floatRegex = "-?\d+\.?\d*"
+integerRegex = "-?\d+"
+textRegex = "[a-z]+"
+lineRegex = f"({integerRegex})\t({floatRegex})\t({floatRegex})"
+paramRegex = f"TimeUnit : ({textRegex})\tTimerMultiplier : ({floatRegex})\tStartPosition : {floatRegex}\tStartVelocity : {floatRegex}"
 headerLine = "Step\tCurrent\tPower"
 
 skipLine = True

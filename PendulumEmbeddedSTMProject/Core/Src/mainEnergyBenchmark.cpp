@@ -141,8 +141,6 @@ int main(void)
 	PendulumINA219Monitor pendulumMonitor(&ina219t, pendulum, &htim7, TimeUnit::Microseconds, 3.f);
 	INA219Bench energybench(energyBenchWrapper, &pendulumMonitor);
 
-	std::cout << "Press user button to start benchmark" << std::endl;
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
