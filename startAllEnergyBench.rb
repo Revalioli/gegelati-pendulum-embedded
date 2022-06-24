@@ -56,7 +56,6 @@ puts "Valid TPG subdirectories are #{valid_TPG_directories}"
 
 
 currentTime = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
-resultsFileName =  "#{currentTime}.png"
 
 valid_TPG_directories.each { |tpgDirName|
 
@@ -112,7 +111,7 @@ valid_TPG_directories.each { |tpgDirName|
 
     # === Analysing resuts ===
 
-    `ResultsAnalysis/plotMeasures.py #{logPath} -S #{tpgDirName}/#{resultsFileName}`
+    `./plotMeasures.py #{logPath} -S #{tpgDirName} -p #{currentTime} --show`
     checkExitstatus
 }
 
