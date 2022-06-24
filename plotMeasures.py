@@ -46,11 +46,12 @@ for o, a in options:
 pngFile = None
 statsFile = None
 
-try:
-    pngFile = open(f"{exportDir}/{filePrefix}_graph.png", "w+b")
-    statsFile = open(f"{exportDir}/{filePrefix}_measuresStats.md", "w+")
-except FileNotFoundError as err:
-    sys.exit(err)
+if exportResults:
+    try:
+        pngFile = open(f"{exportDir}/{filePrefix}_graph.png", "w+b")
+        statsFile = open(f"{exportDir}/{filePrefix}_measuresStats.md", "w+")
+    except FileNotFoundError as err:
+        sys.exit(err)
 
 
 #================
