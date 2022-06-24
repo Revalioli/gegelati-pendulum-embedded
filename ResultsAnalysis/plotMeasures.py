@@ -11,25 +11,33 @@ import getopt
 
 # Check and parse script parameters
 
-if len(sys.argv) < 2 or len(sys.argv) > 3 :
-    sys.exit("This script must have only one argument for the file with the current measures")
+if len(sys.argv) < 2:
+    sys.exit("Not enough arguments, you must provide a path to the data")
 
 try:
-    options, remainder = getopt.getopt(sys.argv[2:], "s")
+    options, remainder = getopt.getopt(sys.argv[2:], "sS:")
 except getopt.GetoptError as err:
-    print(err)
-    sys.exit(1)
+    sys.exit(err)
 
 fileName = sys.argv[1]
 outputPng = False
+outputFilePath = ""
+outputFile = None
 
 for o, a in options:
     if o == "-s":
         outputPng = True
-    else:
-        sys.exit("Unhandled option")
-        
+    elif o == "-S":
+        outputPng = True
+        outputFilePath = a
 
+        try:
+            outputFile = open(outputFilePath, "w+b")
+        except FileNotFoundError as err:
+            sys.exit(err)
+    else:
+        sys.exit("Unhandled option #{o}")
+        
 
 #================
 # === Parsing ===
@@ -38,10 +46,14 @@ for o, a in options:
 # === Reading variables ===
 logStart = "##### Log Start #####"
 logEnd = "##### Log End #####"
-# lineRegex = "Step : (-?\d+), Current : (\d+\.?\d*)"
-lineRegex = "(-?\d+)\t(\d+\.?\d*)\t(\d+\.?\d*)"
-paramRegex = "TimeUnit : ([a-z]+)\tTimerMultiplier : (\d+\.?\d*)"
+
+floatRegex = "(\d+\.?\d*)"
+integerRegex = "(-?\d+)"
+textRegex = "([a-z]+)"
+lineRegex = f"{integerRegex}\t{floatRegex}\t{floatRegex}"
+paramRegex = f"TimeUnit : {textRegex}\tTimerMultiplier : {floatRegex}"
 headerLine = "Step\tCurrent\tPower"
+
 skipLine = True
 timeUnit = ""
 timeMultiplier = 1
@@ -135,7 +147,7 @@ class AxeCursor(object):
         
         self.ax.figure.canvas.draw_idle()
         
-
+# Set figure inital size to be big enough for plt.savefig
 fig = plt.gcf()
 fig.set_size_inches(12.8, 9.6)
 
@@ -162,7 +174,8 @@ plt.legend([l1, l2, l3], ["Current", "Pendulum step", "Power"])
 plt.subplots_adjust(right=0.85)
 
 if outputPng:
-    plt.savefig("mpl_export.png")
+    plt.savefig(outputFile)
+    outputFile.close()
 else:
     # Table for cursors
     t1 = ax1.table( [ ["Current", "0.0"], ["Power", "0.0"], ["Step", "0"] ], cellLoc='center', bbox=[0.0, -0.3, 0.2, 0.2])
