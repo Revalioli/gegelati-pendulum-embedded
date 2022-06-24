@@ -5,11 +5,14 @@ require 'fileutils'
 
 # =====[ Script parameters ]=====
 
-
-# Set here the compiler and STM32 programs path
+# Set here the compiler path and program dependencies command
 compilerDirPath = "/opt/st/stm32cubeide_1.9.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.linux64_1.0.0.202111181127/tools/bin"
+stm32ProgrammerCmd = "STM32_Programmer_CLI"
+picocomCmd = "picocom"
 
-# === Checking files ===
+# ===============================
+
+
 
 def checkCodeGenFiles directoryName
     # Returns true if directoryName contains files pendulum.c, pendulum.h, pendulum_program.c and pendulum_program.h
@@ -20,6 +23,14 @@ def checkCodeGenFiles directoryName
 
     return true
 end
+
+def checkExitstatus
+    # Exit the script if last call to a subprocess return an exit code different from 0
+    exit 1 if $?.exitstatus != 0
+end
+
+
+# === Checking files ===
 
 valid_TPG_directories = []  # Store all subdirectories path containing the required TPG CodeGen files
 Dir.open("TPG") { |d|
@@ -73,34 +84,32 @@ valid_TPG_directories.each { |tpgDirName|
     ENV["PATH"] = compilerDirPath + ':' + ENV["PATH"]
 
     system("make all -C ./PendulumEmbeddedSTMProject/ReleaseEnergyBench")
-
-    exit 1 if $?.exitstatus != 0
-
-    puts "Successful compilation !"
+    checkExitstatus
 
     src = "PendulumEmbeddedSTMProject/ReleaseEnergyBench/PendulumEmbeddedSTMProject.elf"
     FileUtils.cp(src, tpgDirName)
 
 
-    # === Flashing on STM32 ===
-    # Flashing is done using STM32_Programer_CLI, which must be already install and accesible using PATH
+    # === Load program on STM32 flash memory ===
+    # Load is done using STM32_Programer_CLI, which must be already install
 
-    system("STM32_Programmer_CLI -c port=SWD -w #{tpgDirName}/PendulumEmbeddedSTMProject.elf -rst")
-
-    exit 1 if $?.exitstatus != 0
+    system("#{stm32ProgrammerCmd} -c port=SWD -w #{tpgDirName}/PendulumEmbeddedSTMProject.elf -rst")
+    checkExitstatus
 
 
     # === Launching picocom, start inference ===
 
-    `rm #{tpgDirName}/picocom.log`
+    logPath = "#{tpgDirName}/picocom.log"
 
-    system("picocom /dev/ttyACM0 -b 115200 -g #{tpgDirName}/picocom.log")
-    exit 1 if $?.exitstatus != 0
+    `rm #{logPath}`
+
+    system("#{picocomCmd} /dev/ttyACM0 -b 115200 -g #{logPath}")
+    checkExitstatus
 
     # === Analysing resuts ===
 
-    `ResultsAnalysis/plotMeasures.py #{tpgDirName}/picocom.log -s`
-    exit 1 if $?.exitstatus != 0
+    `ResultsAnalysis/plotMeasures.py #{logPath} -S #{tpgDirName}/results.png`
+    checkExitstatus
 }
 
 
