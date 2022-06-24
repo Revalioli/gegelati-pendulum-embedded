@@ -54,6 +54,9 @@ puts "Valid TPG subdirectories are #{valid_TPG_directories}"
 
 # Compiling, flashing on STM32, do inference and analyse results for each TPG
 
+
+resultsFileName = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
+
 valid_TPG_directories.each { |tpgDirName|
 
     # === Moving file for compilation ===
@@ -108,7 +111,7 @@ valid_TPG_directories.each { |tpgDirName|
 
     # === Analysing resuts ===
 
-    `ResultsAnalysis/plotMeasures.py #{logPath} -S #{tpgDirName}/results.png`
+    `ResultsAnalysis/plotMeasures.py #{logPath} -S #{tpgDirName}/#{resultsFileName}.png`
     checkExitstatus
 }
 
