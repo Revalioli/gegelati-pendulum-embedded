@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import math
+from os import stat
 import numpy as np
 import matplotlib as mp
 import matplotlib.pyplot as plt
@@ -8,36 +9,49 @@ import matplotlib.pyplot as plt
 import sys
 import re
 import getopt
+from datetime import datetime
 
-# Check and parse script parameters
+# Check and parse script options
+
+# --show : display graph of the measures in a matlotlib window
+# -S <dir_path> : export graph as a png file and some stats about the measures at directory <dir_path>
+# -p <prefix> : specify a prefix for all exported files 
 
 if len(sys.argv) < 2:
     sys.exit("Not enough arguments, you must provide a path to the data")
 
 try:
-    options, remainder = getopt.getopt(sys.argv[2:], "sS:")
+    options, remainder = getopt.getopt(sys.argv[2:], "S:p:", ["show"])
 except getopt.GetoptError as err:
     sys.exit(err)
 
 fileName = sys.argv[1]
-outputPng = False
-outputFilePath = ""
-outputFile = None
+
+exportResults = False
+exportDir = ""
+filePrefix = ""
+matplotlibShow = False
 
 for o, a in options:
-    if o == "-s":
-        outputPng = True
-    elif o == "-S":
-        outputPng = True
-        outputFilePath = a
-
-        try:
-            outputFile = open(outputFilePath, "w+b")
-        except FileNotFoundError as err:
-            sys.exit(err)
+    if o == "-S":
+        exportResults = True
+        exportDir = a
+    elif o == "-p":
+        filePrefix = a
+    elif o == "--show":
+        matplotlibShow = True
     else:
         sys.exit("Unhandled option #{o}")
-        
+
+pngFile = None
+statsFile = None
+
+try:
+    pngFile = open(f"{exportDir}/{filePrefix}_graph.png", "w+b")
+    statsFile = open(f"{exportDir}/{filePrefix}_measuresStats.md", "w+")
+except FileNotFoundError as err:
+    sys.exit(err)
+
 
 #================
 # === Parsing ===
@@ -103,6 +117,21 @@ for idx, line in enumerate(file):
 
 time = [ (i+1) * timeMultiplier for i in range(len(currents)) ]
 
+#=========================
+# === Analyse measures ===
+#=========================
+
+if exportResults:
+    currentAvg = np.average(currents)
+    powerAvg = np.average(powers)
+    stepAvgTime = time[-1]/pendulumSteps[-1]
+
+    statsFile.write("# Measures statistics\n")
+    statsFile.write(f"Average current : {currentAvg}\n")
+    statsFile.write(f"Average power consumption : {powerAvg}\n")
+    statsFile.write(f"Average step time : {stepAvgTime}\n")
+
+    statsFile.close()
 
 
 #=====================
@@ -151,6 +180,9 @@ class AxeCursor(object):
 fig = plt.gcf()
 fig.set_size_inches(12.8, 9.6)
 
+if exportDir:
+    fig.suptitle(exportDir)
+
 # Current
 ax1 = plt.subplot()
 ax1.set_ylabel("mA", color='red')
@@ -173,10 +205,12 @@ l3, = ax3.plot(time, powers, color='green')
 plt.legend([l1, l2, l3], ["Current", "Pendulum step", "Power"])
 plt.subplots_adjust(right=0.85)
 
-if outputPng:
-    plt.savefig(outputFile)
-    outputFile.close()
-else:
+if exportResults:
+    plt.savefig(pngFile)
+    pngFile.close()
+
+
+if matplotlibShow:
     # Table for cursors
     t1 = ax1.table( [ ["Current", "0.0"], ["Power", "0.0"], ["Step", "0"] ], cellLoc='center', bbox=[0.0, -0.3, 0.2, 0.2])
     t1.auto_set_font_size(False)
