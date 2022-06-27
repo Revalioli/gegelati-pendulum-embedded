@@ -81,7 +81,7 @@ pendulumSteps = []
 file = open(fileName)    # Open read only
 
 for idx, line in enumerate(file):
-    line = line.rstrip('\n')
+    line = line.rstrip('\n\r')
 
     if skipLine:    # Not currently in a valid log part
         skipLine = not (line == logStart)
