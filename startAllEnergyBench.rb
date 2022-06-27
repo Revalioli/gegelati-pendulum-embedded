@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 
 require 'fileutils'
-
+require 'serialport'
 
 # =====[ Script parameters ]=====
 
@@ -9,6 +9,9 @@ require 'fileutils'
 compilerDirPath = "/opt/st/stm32cubeide_1.9.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.linux64_1.0.0.202111181127/tools/bin"
 stm32ProgrammerCmd = "STM32_Programmer_CLI"
 picocomCmd = "picocom"
+
+# Path to the serial port corresponding to the STM32 board
+serialPortPath = "/dev/ttyACM0"
 
 # ===============================
 
@@ -100,14 +103,28 @@ valid_TPG_directories.each { |tpgDirName|
     checkExitstatus
 
 
-    # === Launching picocom, start inference ===
+    # === Launching serial interface, start inference ===
 
     logPath = "#{tpgDirName}/#{currentTime}.log"
 
-    `rm #{logPath}`
+    FileUtils.rm(logPath, force: true)  # Remove old log file if any
 
-    system("#{picocomCmd} /dev/ttyACM0 -b 115200 -g #{logPath}")
-    checkExitstatus
+    logFile = File.open(logPath, "w+");
+    SerialPort.open(serialPortPath, baud = 115200) { |serialport|        
+        continue = true
+
+        puts "===== Press the STM32 user button to start inference ====="
+
+        while continue
+            line = serialport.readline
+
+            puts line
+            logFile << line
+
+            continue = false if line == "Exiting energy bench\r\n"
+        end
+    }
+    logFile.close
 
     # === Analysing resuts ===
 
