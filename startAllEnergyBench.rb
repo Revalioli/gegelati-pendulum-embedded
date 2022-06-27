@@ -8,7 +8,6 @@ require 'serialport'
 # Set here the compiler path and program dependencies command
 compilerDirPath = "/opt/st/stm32cubeide_1.9.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.linux64_1.0.0.202111181127/tools/bin"
 stm32ProgrammerCmd = "STM32_Programmer_CLI"
-picocomCmd = "picocom"
 
 # Path to the serial port corresponding to the STM32 board
 serialPortPath = "/dev/ttyACM0"
@@ -55,8 +54,7 @@ Dir.open("TPG") { |d|
 puts "Valid TPG subdirectories are #{valid_TPG_directories}"
 
 
-# Compiling, flashing on STM32, do inference and analyse results for each TPG
-
+# === Compiling, flashing on STM32, do inference and analyse results for each TPG ===
 
 currentTime = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
 
@@ -81,25 +79,23 @@ valid_TPG_directories.each { |tpgDirName|
         FileUtils.cp(src, dest)
     }
 
-    # === Compile executable ===
 
-    # For now this use the build configuraiton generated before calling this script by STM32CubeIDE
-    # It could be a good idea to write a separate makefile so STM32CubeIDE is not needed to build
+    # === Compiling executable ===
 
-    # Set comiler path in PATH environment variable
+    # Adds comiler path in PATH environment variable, so the make subprocess will inherit
     ENV["PATH"] = compilerDirPath + ':' + ENV["PATH"]
 
-    system("make all -C ./PendulumEmbeddedSTMProject/ReleaseEnergyBench")
+    system("make all -C ./bin")
     checkExitstatus
 
-    src = "PendulumEmbeddedSTMProject/ReleaseEnergyBench/PendulumEmbeddedSTMProject.elf"
+    src = "bin/PendulumEmbeddedMeasures.elf"
     FileUtils.cp(src, tpgDirName)
 
 
-    # === Load program on STM32 flash memory ===
-    # Load is done using STM32_Programer_CLI, which must be already install
+    # === Loading program on STM32 flash memory ===
+    # Loading is done using STM32_Programer_CLI which must be already install
 
-    system("#{stm32ProgrammerCmd} -c port=SWD -w #{tpgDirName}/PendulumEmbeddedSTMProject.elf -rst")
+    system("#{stm32ProgrammerCmd} -c port=SWD -w #{tpgDirName}/PendulumEmbeddedMeasures.elf -rst")
     checkExitstatus
 
 
@@ -110,11 +106,11 @@ valid_TPG_directories.each { |tpgDirName|
     FileUtils.rm(logPath, force: true)  # Remove old log file if any
 
     logFile = File.open(logPath, "w+");
-    SerialPort.open(serialPortPath, baud = 115200) { |serialport|        
+    SerialPort.open(serialPortPath, baud = 115200) { |serialport|
+        serialport.flush_input  # In case there is already something in the buffer
+
         continue = true
-
         puts "===== Press the STM32 user button to start inference ====="
-
         while continue
             line = serialport.readline
 
@@ -125,6 +121,7 @@ valid_TPG_directories.each { |tpgDirName|
         end
     }
     logFile.close
+
 
     # === Analysing resuts ===
 
