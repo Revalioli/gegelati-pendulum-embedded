@@ -28,6 +28,7 @@
 #include <cstdbool>
 #include <vector>
 #include <iostream>
+#include <unistd.h>
 
 #include "PendulumEnvironment.h"
 extern "C" {
@@ -141,6 +142,9 @@ int main(void)
 	PendulumINA219Monitor pendulumMonitor(&ina219t, pendulum, &htim7, TimeUnit::Microseconds, 3.f);
 	INA219Bench energybench(energyBenchWrapper, &pendulumMonitor);
 
+  std::cout << "START" << std::endl;  // Synchronise with PC
+
+  char buffStart;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -148,7 +152,8 @@ int main(void)
 	while (1)
 	{
 
-		if(PC13Sig){
+    read(STDIN_FILENO, &buffStart, sizeof(char));
+		if(buffStart == '\n'){
 
 			std::cout << "Starting energy bench" << std::endl;
 
@@ -161,7 +166,7 @@ int main(void)
 
 			std::cout << "Exiting energy bench" << std::endl;
 
-			std::cout << "End of program" << std::endl;
+			std::cout << "END" << std::endl;
 			while(1) {}		// Waiting for reset
 		}
 

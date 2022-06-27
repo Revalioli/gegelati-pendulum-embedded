@@ -109,15 +109,17 @@ valid_TPG_directories.each { |tpgDirName|
     SerialPort.open(serialPortPath, baud = 115200) { |serialport|
         serialport.flush_input  # In case there is already something in the buffer
 
+        until (serialport.readline == "START\r\n") do end   # Waiting for STM32 to synchronise
+        serialport << "\n"  # The STM32 is waiting for a newline character, which will start the inference
+
         continue = true
-        puts "===== Press the STM32 user button to start inference ====="
         while continue
             line = serialport.readline
 
             puts line
             logFile << line
 
-            continue = false if line == "Exiting energy bench\r\n"
+            continue = false if line == "END\r\n"
         end
     }
     logFile.close
