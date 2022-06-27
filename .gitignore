@@ -9,7 +9,9 @@ PendulumEmbeddedSTMProject/.settings/
 #TPG CodeGen files
 TPG/
 
-# Measurements analysis results files
+# Measurements analysis complation and results files
 
 PastResults/
 picocom.log
+*.o
+*.elf

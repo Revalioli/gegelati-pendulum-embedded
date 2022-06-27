@@ -186,8 +186,6 @@ int main(void)
 
 		if(PC13Sig){
 
-			std::cout << "Hello !" << std::endl;
-
 			// Inference timing bench
 //			std::cout << "===> Starting inference timing bench" << std::endl;
 //
