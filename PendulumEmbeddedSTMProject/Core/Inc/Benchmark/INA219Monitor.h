@@ -32,6 +32,8 @@ protected:
 	/// True if the power must be recorded
 	bool recordPower;
 
+	uint8_t skipRecord;
+
 private:
 
 	/// ina219 handler to be used for measurements

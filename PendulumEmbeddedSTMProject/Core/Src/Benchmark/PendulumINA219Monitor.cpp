@@ -12,6 +12,7 @@ void PendulumINA219Monitor::record() {
 }
 
 void PendulumINA219Monitor::flushHistory() {
+	this->skipRecord = 2;
 
 	for(int i = 0; i < this->historyIdx; i++){
 		std::cout << this->frameRecord[i] << '\t'
