@@ -6,7 +6,7 @@
 INA219Monitor::INA219Monitor(INA219_t * ina219t, TIM_HandleTypeDef * tim,
 		TimeUnit timUnit, float timMultiplier, bool recordCurrent, bool recordPower)
 				: Monitor(tim, timUnit, timMultiplier), currentHistory{0.0}, powerHistory{0}, historyIdx(0),
-				  recordCurrent(recordCurrent), recordPower(recordPower), ina219t(ina219t), flushWhenFull(true) {}
+				  recordCurrent(recordCurrent), recordPower(recordPower), skipRecord(0), ina219t(ina219t), flushWhenFull(true) {}
 
 void INA219Monitor::clearHistory(){
 	this->historyIdx = 0;
@@ -18,6 +18,7 @@ void INA219Monitor::clearHistory(){
 }
 
 void INA219Monitor::flushHistory(){
+	this->skipRecord = 2;
 
 	for(int i = 0; i < this->historyIdx; i++)
 		std::cout << this->currentHistory[i] << '\t' << this->powerHistory[i] << std::endl;
@@ -26,11 +27,24 @@ void INA219Monitor::flushHistory(){
 }
 
 void INA219Monitor::record(){
-	this->currentHistory[this->historyIdx] =
-		this->recordCurrent ? INA219_ReadCurrent(this->ina219t) : nan("");
 
-	this->powerHistory[this->historyIdx] =
-		this->recordPower ? INA219_ReadPower(this->ina219t) : nan("");
+	if(this->skipRecord > 0){
+		this->skipRecord--;
+
+		// The previous data in the array is used instead
+		this->currentHistory[this->historyIdx] =
+			this->currentHistory[ this->historyIdx == 0 ? this->HISTORY_SIZE-1 : this->historyIdx-1 ];
+
+		this->powerHistory[this->historyIdx] =
+			this->powerHistory[ this->historyIdx == 0 ? this->HISTORY_SIZE-1 : this->historyIdx-1 ];
+	}
+	else{
+		this->currentHistory[this->historyIdx] =
+			this->recordCurrent ? INA219_ReadCurrent(this->ina219t) : nan("");
+
+		this->powerHistory[this->historyIdx] =
+			this->recordPower ? INA219_ReadPower(this->ina219t) : nan("");
+	}
 
 
 	this->historyIdx++;
