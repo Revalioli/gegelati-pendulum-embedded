@@ -12,8 +12,13 @@ stm32ProgrammerCmd = "STM32_Programmer_CLI"
 # Path to the serial port corresponding to the STM32 board
 serialPortPath = "/dev/ttyACM0"
 
+# Set to true if you want to display the complete 
+showGraph = true
+
 # ===============================
 
+
+C_UINT_MAX = 4294967295     # C language max unsigned int constant value from limits.h
 
 
 def checkCodeGenFiles directoryName
@@ -41,7 +46,7 @@ Dir.open("TPG") { |d|
         path = d.path + '/' + child
         
         if File.directory? path
-            if checkCodeGenFiles path
+            if checkCodeGenFiles(path)
                 valid_TPG_directories << path
             else
                 puts "Directgory #{child} us missing one or more TPG files"
@@ -55,6 +60,11 @@ puts "Valid TPG subdirectories are #{valid_TPG_directories}"
 
 
 # === Compiling, flashing on STM32, do inference and analyse results for each TPG ===
+
+
+currentAvgs = {}
+powerAvgs = {}
+stepTimeAvgs = {}
 
 currentTime = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
 
@@ -85,7 +95,9 @@ valid_TPG_directories.each { |tpgDirName|
     # Adds comiler path in PATH environment variable, so the make subprocess will inherit
     ENV["PATH"] = compilerDirPath + ':' + ENV["PATH"]
 
-    system("make all -C ./bin")
+    # No matter the TPG, the program on the STM32 will always initialise itself the same way, so as its random number generator.
+    # We want the TPGs to have random initial state, so the seed use to initialise it is geerated via this ruby script
+    system("make all -C ./bin TPG_SEED=#{rand(C_UINT_MAX)}")
     checkExitstatus
 
     src = "bin/PendulumEmbeddedMeasures.elf"
@@ -127,9 +139,31 @@ valid_TPG_directories.each { |tpgDirName|
 
     # === Analysing resuts ===
 
-    `./plotMeasures.py #{logPath} -S #{tpgDirName} -p #{currentTime} --show`
+    `./plotMeasures.py #{logPath} -S #{tpgDirName} -p #{currentTime}`
     checkExitstatus
+
+    File.open("#{tpgDirName}/#{currentTime}_measuresStats.md").each_line { |line|
+        
+        case line
+        when /Average current : (\d+\.?\d*)/
+            currentAvgs[tpgDirName] = $1.to_f
+        when /Average power consumption : (\d+\.?\d*)/
+            powerAvgs[tpgDirName] = $1.to_f
+        when /Average step time : (\d+\.?\d*)/
+            stepTimeAvgs[tpgDirName] = $1.to_f
+        end
+    }.close
+
 }
 
 
+# Displaying global results
 
+puts "===[ Results summary ]==="
+
+valid_TPG_directories.sort!.each { |tpgDirName|
+    puts "#{tpgDirName}"
+    puts "\tAverage current : #{currentAvgs[tpgDirName].round(4)}"
+    puts "\tAverage power consumption : #{powerAvgs[tpgDirName].round(4)}"
+    puts "\tAverage step time : #{stepTimeAvgs[tpgDirName].round(4)}"
+}

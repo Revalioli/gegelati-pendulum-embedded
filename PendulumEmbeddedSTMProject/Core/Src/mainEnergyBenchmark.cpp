@@ -70,7 +70,7 @@ const char logEnd[] = "##### Log End #####";
 
 // === TPG ===
 
-uint32_t seed = 0;
+uint32_t seed;  // Seed use to reset the PendulumEnvironment
 extern "C" {
 	extern double* in1;
 }
@@ -126,6 +126,12 @@ int main(void)
 	in1 = pendulum.currentState;
 	pendulum_ptr = &pendulum;
 
+  #ifdef TPG_SEED
+  seed = TPG_SEED;
+  #else
+  seed = HAL_GetTick();
+  #endif
+
 	/* === INA219 setup === */
 
 	if(INA219_Init(&ina219t, &hi2c1, INA219_DEFAULT_ADDRESS, 3.2768) == 0){
@@ -144,6 +150,8 @@ int main(void)
 
   std::cout << "START" << std::endl;  // Synchronise with PC
 
+  std::cout << "Seed STM32 : " << seed << std::endl;
+
   char buffStart;
   /* USER CODE END 2 */
 
@@ -157,7 +165,6 @@ int main(void)
 
 			std::cout << "Starting energy bench" << std::endl;
 
-			seed = HAL_GetTick();
 			pendulum_ptr->reset(seed);
 
 			std::cout << logStart << std::endl;
