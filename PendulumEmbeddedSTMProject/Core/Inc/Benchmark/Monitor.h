@@ -8,28 +8,33 @@
 extern "C" void recordActiveMonitor();
 
 /**
- * \brief Abstract class for all kind of Monitor
+ * \brief Base abstract class for all kind of Monitors.
  *
  * A Monitor can perform record of anything when the record() method is called,
- * and stored these data in a history. It is design to be used with a timer that will call
- * the record() function every update event if the Monitor is the activeMonitor.
+ * and store data in a history.
+ *
+ * This class is designed to allow periodically record of the Monitor using a timer.
+ * If a Monitor is the activeMonitor (use makeActive() method), then every call
+ * to recordActiveMonitor() will call the activeMonitor record() method.
+ * The recordActiveMonitor() may then be call by a timer interrupt
+ * to periodically record the activeMonitor.
  */
 class Monitor {
 
-	/// Monitor used with global callback
+	/// Monitor used with global callback.
 	static Monitor * activeMonitor;
 
 
 	/* === Timer === */
 
-	/// Associated timer for global callback
+	/// Associated timer when used as activeMonitor.
 	TIM_HandleTypeDef * timer;
 
 protected:
-	/// Timer base time unit
+	/// timer period unit
 	TimeUnit timerUnit;
 
-	/// Timer base time miltiplier
+	/// timer period unit multiplier
 	float timerMultiplier;
 
 
@@ -38,32 +43,35 @@ protected:
 public:
 
 	/**
-	 * \brief Basic constructor
+	 * \brief Basic constructor.
 	 *
-	 * \param[out] TIM_HandleTypeDef *: the timer to be used for calling recordActiveMonitor() when this is the activeMonitor,
-	 * nullptr if you don't want to use this callback.
-	 * \param[in] timUnit: the TimeUnit corresponding to the timer base time step
-	 * \param[in] timMultiplier: multiplier to be applied on timUnit to get the timer base time step
+	 * \param[out] tim the TIM_HandleTypeDef* of the associated timer when used as activeMonitor, give nullptr if you don't want to use this callback.
+	 * \param[in] timUnit: the TimeUnit corresponding to the timer period unit, unused if tim = nullptr.
+	 * \param[in] timMultiplier: multiplier to be applied on timUnit to get the timer period unit multiplier, unused if tim = nullptr.
 	 */
 	Monitor(TIM_HandleTypeDef * tim = nullptr, TimeUnit timUnit = TimeUnit::None, float timMultiplier = 0.f);
 
 	virtual ~Monitor() {}
 
-    /// Clears the measurement history
+    /// Clear the measurement history.
     virtual void clearHistory() = 0;
 
-    /// Sends history values to stdout
+    /// Send history values to stdout.
     virtual void flushHistory() = 0;
 
-    /// Do one record
+    /// Do one record.
     virtual void record() = 0;
 
 
 
-    /// Sets this CurrentMonitor as the activeMonitor and starts auto measurement using its associated timer
+    /**
+     * \brief Set this Monitor as the activeMonitor and starts auto measurement using its associated timer.
+     * 
+	 * If this Monitor has no timer, then this method is equivalent to Monitor::noActiveMonitor().
+     */
     void makeActive();
 
-    /// Deactivate the active monitor
+    /// Set the activeMonitor to nullptr.
     static void noActiveMonitor();
 
 

@@ -8,18 +8,22 @@ Monitor::Monitor(TIM_HandleTypeDef * tim, TimeUnit timUnit, float timMultiplier)
 void Monitor::makeActive(){
 
 	// Stop timer doing auto measurement for old active monitor
-	if(Monitor::activeMonitor != nullptr && Monitor::activeMonitor->timer != nullptr)
+	// An activeMonitor always has a timer
+	if(Monitor::activeMonitor != nullptr)
 		HAL_TIM_Base_Stop_IT(Monitor::activeMonitor->timer);
 
-	Monitor::activeMonitor = this;
+	if(this->timer != nullptr){
+		Monitor::activeMonitor = this;
+		// Start timer for auto measurement
+		HAL_TIM_Base_Start_IT(this->timer);
+	}
+	else
+	 Monitor::activeMonitor = nullptr;
 
-	// Start timer for auto measurement
-	if(timer != nullptr)
-		HAL_TIM_Base_Start_IT(timer);
 }
 
 void Monitor::noActiveMonitor(){
-	if(Monitor::activeMonitor != nullptr && Monitor::activeMonitor->timer != nullptr)
+	if(Monitor::activeMonitor != nullptr)
 		HAL_TIM_Base_Stop_IT(Monitor::activeMonitor->timer);
 
 	Monitor::activeMonitor = nullptr;
