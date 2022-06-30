@@ -1,5 +1,5 @@
-#ifndef PENDULUM_EMBEDDED_PENDULUMENVIRONMENT_H
-#define PENDULUM_EMBEDDED_PENDULUMENVIRONMENT_H
+#ifndef PENDULUMENVIRONMENT_H
+#define PENDULUMENVIRONMENT_H
 
 #include <vector>
 #include <cstdint>
@@ -10,6 +10,15 @@
 #include <iostream>
 #endif
 
+/**
+ * \brief Environment simulating a pendulum.
+ * 
+ * This environment is base on the one from the gegelati-apps repository, but
+ * only keeping the pendulum simulation part and using a code gen TPG to
+ * to action inferences.
+ * Code gen files (pendulum.h/.c and pendulum_program.h/.c) are thus required
+ * for this environment.
+ */
 class PendulumEnvironment {
 private:
 
@@ -22,15 +31,14 @@ private:
     static const double LENGTH;
 
 	/**
-	* \brief Available actions for the LearningAgent.
+	* \brief Available actions.
 	*
-	* Each number $a$ in this list, with $a \in ]0.0;1.0], corresponds to two
-	* actions available for the LearningAgent: $a*MAX_TORQUE$ and
-	* $-a*MAX_TORQUE$.
-	* An additional action 0.0 is always available to the LearningAgent.
+	* Each number a in this list, with a in ]0.0;1.0], corresponds to two
+	* actions : a * MAX_TORQUE and -a*MAX_TORQUE.
+	* An additional action 0.0 is always available.
 	*
-	* A total of availableAction.size()*2 + 1 actions are thus available to
-	* the LearningAgent, through the doAction() method.
+	* A total of availableAction.size()*2 + 1 actions are thus available
+	* through the doAction() method.
 	*/
     const std::vector<double> availableActions;
 
@@ -85,10 +93,14 @@ public:
 	*/
     double getActionFromID(const uint64_t& actionID);
 
-    /// Inherited via LearningEnvironment
+    /**
+     * \brief Perform an action on the environment.
+     * 
+     * \param actionID the index of the action in availableActions. 
+     */
     void doAction(uint64_t& actionID);
 
-    /// Starts the inference for nbSteps
+    /// Start nbSteps inferences and simulation steps using the code gen TPG.
     void startInference(int nbSteps);
 
 
@@ -97,8 +109,9 @@ public:
 inline int PendulumEnvironment::getCurrentStep() const { return this->currentStep; }
 
 
-#ifndef STM32
+#ifdef PENDULUM_TRACE
+/// Print a PendulumEnvironment in a stream.
 std::ostream& operator<<(std::ostream& os, const PendulumEnvironment& pendulum);
 #endif
 
-#endif //PENDULUM_EMBEDDED_PENDULUMENVIRONMENT_H
+#endif //PENDULUMENVIRONMENT_H

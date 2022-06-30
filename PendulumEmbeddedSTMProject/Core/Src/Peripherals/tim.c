@@ -21,9 +21,9 @@
 #include "tim.h"
 
 /* USER CODE BEGIN 0 */
-extern void recordActiveMonitor();
+extern void recordActiveMonitor();  ///< Function from Monitor.h 
 
-HAL_StatusTypeDef timStatus = HAL_OK;
+HAL_StatusTypeDef timStatus = HAL_OK; ///< Used by timer callback to store a status, for debug purpose.
 
 /* USER CODE END 0 */
 
@@ -167,6 +167,11 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* tim_baseHandle)
 
 /* USER CODE BEGIN 1 */
 
+/**
+ * \brief HAL callback function for timer who raised the IRQ with an update event. 
+ * 
+ * \param htim[in] the TIM_HandleTypeDef* of the timer.
+ */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim){
 
 	if(htim->Instance == TIM7){

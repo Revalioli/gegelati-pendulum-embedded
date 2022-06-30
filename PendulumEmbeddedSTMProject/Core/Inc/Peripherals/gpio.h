@@ -40,7 +40,8 @@ void MX_GPIO_Init(void);
 
 /* USER CODE BEGIN Prototypes */
 
-extern volatile bool PC13Sig;
+extern volatile bool PC13Sig; ///< Declared in gpio.c, set to true when the corresponding EXTI IRQ is raised.
+                              ///< On STM32F446RE this is used with the user push button. 
 
 /* USER CODE END Prototypes */
 

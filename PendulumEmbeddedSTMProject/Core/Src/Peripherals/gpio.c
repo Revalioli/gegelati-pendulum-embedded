@@ -28,9 +28,7 @@
 #include "ina219.h"
 #include "serialCommunication.h"
 
-void recordActiveMonitor(INA219_t* ina219t);
 
-extern INA219_t ina219t;
 volatile bool PC13Sig = 0;
 
 /* USER CODE END 0 */
