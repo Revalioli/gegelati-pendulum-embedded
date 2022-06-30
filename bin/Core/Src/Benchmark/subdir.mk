@@ -10,8 +10,7 @@ OBJS += \
 ./Core/Src/Benchmark/Monitor.o \
 ./Core/Src/Benchmark/PendulumINA219Monitor.o \
 ./Core/Src/Benchmark/TimeUnit.o \
-./Core/Src/Benchmark/TimingBench.o \
-./Core/Src/Benchmark/benchFunctions.o 
+./Core/Src/Benchmark/TimingBench.o
 
 
 # Each subdirectory must supply rules for building sources it contributes

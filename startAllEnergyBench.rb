@@ -49,7 +49,7 @@ Dir.open("TPG") { |d|
             if checkCodeGenFiles(path)
                 valid_TPG_directories << path
             else
-                puts "Directgory #{child} us missing one or more TPG files"
+                puts "Directory #{child} us missing one or more TPG files"
             end
         end
     }

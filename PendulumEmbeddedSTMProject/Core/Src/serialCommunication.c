@@ -15,7 +15,6 @@ char * readSerialLine(char * dest, int len){
 
 	dest[idx] = '\0';
 	return dest;
-
 }
 
 // Syscall related
@@ -39,7 +38,7 @@ int __io_getchar(void){
 	// Return character to output
 	__io_putchar(ch);
 
-	// Translate carriage return sent by picocom to a newline character
+	// Translate carriage return to a newline character because some software like picocom does that
 	if(ch == '\r'){
 		__io_putchar('\n');
 		return '\n';
@@ -53,13 +52,19 @@ int _read(int file, char *ptr, int len){
 
 	if(file == STDIN_FILENO){
 
-		// Workaround because I can't really send dummy character when
-		// the user is not typing
+		// Workaround because c/c++ standard functions will
+		// try to read more characters than requested to reduce
+		// the number of calls to _read(), but my implementation of
+		// __io_getchar() can't check if the serial port has
+		// nothing to send and will wait indefinitely
+		// until it receive something.
 		for (int i = 0; i < len; i++){
 
 			int ch = __io_getchar();
 			*ptr++ = ch;
 
+			// This ensure that no more than one line can be read
+			// at once by any function calling _read().
 			if(ch == '\n'){
 				while(i < len){
 					*ptr++ = '\0';
@@ -72,7 +77,7 @@ int _read(int file, char *ptr, int len){
 	}
 	else{
 
-		// Base implementation
+		// Base HAL implementation
 		int DataIdx;
 
 		for (DataIdx = 0; DataIdx < len; DataIdx++)

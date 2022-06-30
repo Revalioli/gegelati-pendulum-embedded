@@ -3,22 +3,23 @@
 #ifndef STM32
 #define _USE_MATH_DEFINES
 #else
-#define M_PI           3.14159265358979323846  /* pi */
+#define M_PI           3.14159265358979323846  // Pi constant because not always included in all cmath header implementations
 #endif
+
 #include <cmath>
 #include <vector>
 #include <cstdlib>
 #include <cstdint>
 
 
-#ifndef STM32
+#ifdef PENDULUM_TRACE
 #include <iostream>
 #endif
 
 
 extern "C" {
     #include "pendulum.h"
-    double* in1;    // Pointer shared with the TPG c code to access environment data
+    double* in1;    // Pointer shared with the TPG c code gen to access environment data
 }
 
 const double PendulumEnvironment::MAX_SPEED = 8.0;
@@ -91,7 +92,7 @@ void PendulumEnvironment::startInference(int nbSteps){
 		uint64_t action = (uint64_t)inferenceTPG();
 		this->doAction(action);
 
-#ifndef STM32
+#ifdef PENDULUM_TRACE
 		std::cout << *this << " === Step " << i << ", action : " << getActionFromID(action) << std::endl;
 #endif
 	}
@@ -100,7 +101,7 @@ void PendulumEnvironment::startInference(int nbSteps){
 }
 
 
-#ifndef STM32
+#ifdef PENDULUM_TRACE
 std::ostream& operator<<(std::ostream& os, const PendulumEnvironment& pendulum){
     return os << "Pendulum current state : { Angle = " << pendulum.getAngle() << ", Velocity = " << pendulum.getVelocity() << "}";
 }

@@ -33,7 +33,6 @@
 #include "INA219Bench.h"
 #include "PendulumINA219Monitor.h"
 #include "TimingBench.h"
-#include "benchFunctions.h"
 #include "ina219.h"
 extern "C" {
 	#include "pendulum_program.h"
@@ -59,28 +58,20 @@ extern "C" {
 
 /* USER CODE BEGIN PV */
 
-uint8_t errorFlag = 0;
-
-// === DEBUG ===
-int startedInference = 0;
-int endedInference = 0;
-int debug[10];
-
-uint64_t actions[NB_ACTIONS];
-
-// === Pendulum global access and parameters === */
+/* === Pendulum global access and parameters === */
 
 PendulumEnvironment * pendulum_ptr;
 uint16_t nbActions = 1000;	// Number of actions per inference
 INA219Monitor * monitor_ptr;
+uint64_t actions[NB_ACTIONS];
 
-// === Current measurement ===
+/* === Energy measurements === */
 
 INA219_t ina219t;
 const char logStart[] = "##### Log Start #####";
 const char logEnd[] = "##### Log End #####";
 
-// === TPG ===
+/* === TPG === */
 
 uint32_t seed = 0;
 extern "C" {
@@ -93,6 +84,12 @@ extern "C" {
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+
+/* ===[ Bench functions ]=== */
+void inferenceBenchWrapper(void);
+void energyMeasurementTimingBenchWrapper(void);
+void environmentEvolutionTimingBenchWrapper(void);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -102,126 +99,124 @@ void SystemClock_Config(void);
 
 /**
   * @brief  The application entry point.
-  * @retval int
+  * @return int
   */
 int main(void)
 {
-  /* USER CODE BEGIN 1 */
+	/* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
+	/* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
+	/* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* USER CODE BEGIN Init */
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* Configure the system clock */
+	SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+	/* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
+	/* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_I2C1_Init();
-  MX_TIM7_Init();
-  MX_USART2_UART_Init();
-  MX_TIM5_Init();
-  /* USER CODE BEGIN 2 */
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_I2C1_Init();
+	MX_TIM7_Init();
+	MX_USART2_UART_Init();
+	MX_TIM5_Init();
+	/* USER CODE BEGIN 2 */
 
-	/* == Pendulum environment === */
+	/* === Pendulum environment === */
 	std::vector<double> availableAction = {0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1.0};
 	PendulumEnvironment pendulum(availableAction);
 	in1 = pendulum.currentState;
 	pendulum_ptr = &pendulum;	// For benchmark
 
+
 	/* === INA219 === */
-
 	if(INA219_Init(&ina219t, &hi2c1, INA219_DEFAULT_ADDRESS, 3.2768) == 0){
-		errorFlag = 1;
-		while(1){
-
-		}
+		std::cout << "Can't initialise INA219_t, end program" << std::endl;
+		while(1){}
 	}
 
 	INA219_setConfig(&ina219t, INA219_CONFIG_BADCRES_12BIT | INA219_CONFIG_BVOLTAGERANGE_32V
 								| INA219_CONFIG_GAIN_1_40MV | INA219_CONFIG_MODE_SANDBVOLT_CONTINUOUS
 								| INA219_CONFIG_SADCRES_12BIT);	// 0x219f
 
-	/* === Current monitoring === */
 
-
+	// TIM5, used for timing benches, raises interrupt every microseconds
+	// TIM7, used for energy monitoring, raised interrupt every 3 milliseconds
 
 	/* === Timing Benchmark === *///
+
 	TimingBench benchInference(inferenceBenchWrapper, &htim5, 15, TimeUnit::Milliseconds, 0.001f);
 
 	INA219Monitor timingRecordMonitor(&ina219t, &htim7);
-	TimingBench benchRecordCurrent(currentMeasurementTimingBenchWrappe, &htim5, 100, TimeUnit::Microseconds, 1.f);
 	timingRecordMonitor.flushWhenFull = false;
 	monitor_ptr = &timingRecordMonitor;
-//
-//	for(int i = 0; i < NB_ACTIONS; i++)
-//		actions[i] = rand() % 15;
-//
-//	TimingBench benchEvolution(environmentEvolutionTimingBenchWrapper, &htim5, 15, TimeUnit::Milliseconds, 0.001f);
+	TimingBench benchINA219Monitor(energyMeasurementTimingBenchWrapper, &htim5, 100, TimeUnit::Microseconds, 1.f);
+
+
+	for(int i = 0; i < NB_ACTIONS; i++)	// Generate random actions for benchEvolution
+		actions[i] = rand() % 15;
+	TimingBench benchEvolution(environmentEvolutionTimingBenchWrapper, &htim5, 15, TimeUnit::Milliseconds, 0.001f);
 
 	/* === Current Benchmark === */
 
 	PendulumINA219Monitor pendulumMonitor(&ina219t, pendulum, &htim7, TimeUnit::Microseconds, 3.f);
-	INA219Bench inaInferenceBench(inferenceBenchWrapper, &pendulumMonitor);
+	INA219Bench inferenceEnergyBench(inferenceBenchWrapper, &pendulumMonitor);
 
-	std::cout << "Press user push button to start benchmark" << std::endl;
+	std::cout << "Press user push button to start benchmarks" << std::endl << std::endl;
 
-  /* USER CODE END 2 */
+	/* USER CODE END 2 */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
 	while (1)
 	{
 
 		if(PC13Sig){
 
 			// Inference timing bench
-//			std::cout << "===> Starting inference timing bench" << std::endl;
-//
-//			benchInference.startBench();
-//			benchInference.printResult();
-//
-//			std::cout << "===> Exiting inference timing bench" << std::endl;
+			std::cout << "===> Starting inference timing bench" << std::endl;
+
+			benchInference.startBench();
+			benchInference.printResult();
+
+			std::cout << "===> Exiting inference timing bench" << std::endl << std::endl;
 
 
-			// CurrentMonitor record timing
-//			std::cout << "Starting timing bench" << std::endl;
-//
-//			benchRecordCurrent.startBench();
-//			benchRecordCurrent.printResult();
-//
-//			std::cout << "Exiting timing bench" << std::endl;
+			// INA219Monitor record timing
+			std::cout << "===> Starting INA219Monitor timing bench" << std::endl;
+
+			benchINA219Monitor.startBench();
+			benchINA219Monitor.printResult();
+
+			std::cout << "===> Exiting INA219Monitor timing bench" << std::endl << std::endl;
 
 
-			// Inference ina bench
-//			std::cout << "Starting current bench" << std::endl;
-//
-//			std::cout << logStart << std::endl;
-//			inaInferenceBench.startBench();
-//			std::cout << logEnd << std::endl;
-//
-//			std::cout << "Exiting current bench" << std::endl;
+			// Inference energy bench
+			std::cout << "===> Starting inference energy bench" << std::endl;
+
+			std::cout << logStart << std::endl;
+			inferenceEnergyBench.startBench();
+			std::cout << logEnd << std::endl;
+
+			std::cout << "===> Exiting inference energy bench" << std::endl << std::endl;
 
 
 			// PendulumEnvironment evolution timing bench
-//			std::cout << "===> Starting environment timing bench" << std::endl;
-//
-//			benchEvolution.startBench();
-//			benchEvolution.printResult();
-//
-//			std::cout << "===> Exiting inference timing bench" << std::endl;
+			std::cout << "===> Starting environment timing bench" << std::endl;
 
+			benchEvolution.startBench();
+			benchEvolution.printResult();
+
+			std::cout << "===> Exiting environment timing bench" << std::endl << std::endl;
 
 			PC13Sig = false;
 		}
@@ -283,6 +278,35 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+/* ===[ Bench functions ]=== */
+
+void inferenceBenchWrapper(void){
+	// Setup
+	seed = HAL_GetTick();
+	pendulum_ptr->reset(seed);
+
+	pendulum_ptr->startInference((int)nbActions);
+}
+
+void energyMeasurementTimingBenchWrapper(void){
+	monitor_ptr->record();
+}
+
+void environmentEvolutionTimingBenchWrapper(void){
+
+	seed = HAL_GetTick();
+	pendulum_ptr->reset(seed);
+	for(int i = 0; i < 20; i++){
+		for(int j = 0; j < NB_ACTIONS; j++){
+			pendulum_ptr->doAction(actions[j]);
+		}
+	}
+
+}
+
+
+
 /* USER CODE END 4 */
 
 /**

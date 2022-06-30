@@ -90,7 +90,7 @@ void energyBenchWrapper(void);
 
 /**
   * @brief  The application entry point.
-  * @retval int
+  * @return int
   */
 int main(void)
 {
