@@ -64,10 +64,11 @@ logEnd = "##### Log End #####"
 
 floatRegex = "-?\d+\.?\d*"
 integerRegex = "-?\d+"
-textRegex = "[a-z]+"
+textRegex = "[a-zA-Z]+"
 lineRegex = f"({integerRegex})\t({floatRegex})\t({floatRegex})"
 paramRegex = f"TimeUnit : ({textRegex})\tTimerMultiplier : ({floatRegex})\tStartPosition : {floatRegex}\tStartVelocity : {floatRegex}"
 headerLine = "Step\tCurrent\tPower"
+inferenceTimingLine = f"=== T_{textRegex} : \d* {textRegex}"
 
 skipLine = True
 timeUnit = ""
@@ -111,6 +112,10 @@ for idx, line in enumerate(file):
 
         # Header line
         if line == headerLine:
+            continue
+
+        # Inference timing results line
+        if re.match(inferenceTimingLine, line) is not None:
             continue
 
         sys.exit(f"Invalid line format at line {idx+1}")
