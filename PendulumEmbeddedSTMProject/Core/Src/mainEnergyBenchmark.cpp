@@ -191,9 +191,9 @@ int main(void)
 			std::cout << "Starting inference execution time bench" << std::endl;
 
 			executionTimingBench.startBench();
-			// std::cout << logStart << std::endl;
+			std::cout << logStart << std::endl;
 			executionTimingBench.printResult();
-			// std::cout << logEnd << std::endl;
+			std::cout << logEnd << std::endl;
 
 
 			std::cout << "Exiting inference execution time bench" << std::endl;
