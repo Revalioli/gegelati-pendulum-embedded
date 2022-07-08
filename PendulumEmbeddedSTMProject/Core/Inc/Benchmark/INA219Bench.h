@@ -14,7 +14,7 @@ class INA219Bench: public Bench {
 
 public:
 
-	/// Constructor using its own CurrentMonitor instance
+	/// Constructor using its own INA219Monitor instance
 	INA219Bench(void (*fun)(void), INA219_t * ina219t, TIM_HandleTypeDef * tim,
 			TimeUnit timUnit = TimeUnit::None, float timMultiplier = 0.f, bool recordCurrent = true, bool recordPower = true);
 
