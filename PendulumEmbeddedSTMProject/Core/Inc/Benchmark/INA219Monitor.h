@@ -49,8 +49,8 @@ public:
 	 *
 	 * \param[out] INA219_t * the ina219 handler to be used for measurements
 	 * \param[out] TIM_HandleTypeDef * the timer used for auto measurement when this is the activeMonitor, pass nullptr for no auto measurement
-	 * \param[in] timUnit: the TimeUnit corresponding to the timer base time step
-	 * \param[in] timMultiplier: multiplier to be applied on timUnit to get the timer base time step
+	 * \param[in] timUnit: the TimeUnit corresponding to the timer time step between recordActveMonitor() calls
+	 * \param[in] timMultiplier: multiplier to be applied on timUnit to get the timer time step between recordActveMonitor() calls
 	 * \param[in] recordCurrent: true if the current must be recorded when calling record()
 	 * \param[in] recordPower: true if the power must be recorded when calling record()
 	 */

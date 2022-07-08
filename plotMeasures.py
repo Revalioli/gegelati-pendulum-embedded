@@ -130,7 +130,7 @@ if exportResults:
     statsFile.write("# Measures statistics\n")
     statsFile.write(f"Average current : {currentAvg}\n")
     statsFile.write(f"Average power consumption : {powerAvg}\n")
-    statsFile.write(f"Average step time : {stepAvgTime}\n")
+    statsFile.write(f"Average step time : {stepAvgTime} {timeUnit}\n")
 
     statsFile.close()
 

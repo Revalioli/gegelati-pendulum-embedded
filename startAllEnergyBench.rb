@@ -65,6 +65,7 @@ puts "Valid TPG subdirectories are #{valid_TPG_directories}"
 currentAvgs = {}
 powerAvgs = {}
 stepTimeAvgs = {}
+timeUnits = {}
 
 currentTime = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
 
@@ -149,8 +150,9 @@ valid_TPG_directories.each { |tpgDirName|
             currentAvgs[tpgDirName] = $1.to_f
         when /Average power consumption : (\d+\.?\d*)/
             powerAvgs[tpgDirName] = $1.to_f
-        when /Average step time : (\d+\.?\d*)/
+        when /Average step time : (\d+\.?\d*) ([a-zA-Z]*)/
             stepTimeAvgs[tpgDirName] = $1.to_f
+            timeUnits[tpgDirName] = $2
         end
     }.close
 
@@ -165,5 +167,5 @@ valid_TPG_directories.sort!.each { |tpgDirName|
     puts "#{tpgDirName}"
     puts "\tAverage current : #{currentAvgs[tpgDirName].round(4)}"
     puts "\tAverage power consumption : #{powerAvgs[tpgDirName].round(4)}"
-    puts "\tAverage step time : #{stepTimeAvgs[tpgDirName].round(4)}"
+    puts "\tAverage step time : #{stepTimeAvgs[tpgDirName].round(4)} #{timeUnits[tpgDirName]}"
 }

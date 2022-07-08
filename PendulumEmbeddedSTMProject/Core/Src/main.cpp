@@ -149,8 +149,8 @@ int main(void)
 								| INA219_CONFIG_SADCRES_12BIT);	// 0x219f
 
 
-	// TIM5, used for timing benches, raises interrupt every microseconds
-	// TIM7, used for energy monitoring, raised interrupt every 3 milliseconds
+	// TIM5, used for timing benches, count each microseconds
+	// TIM7, used for energy monitoring count each 0.1 milliseconds, raised interrupt every 3 milliseconds
 
 	/* === Timing Benchmark === *///
 
@@ -166,9 +166,9 @@ int main(void)
 		actions[i] = rand() % 15;
 	TimingBench benchEvolution(environmentEvolutionTimingBenchWrapper, &htim5, 15, TimeUnit::Milliseconds, 0.001f);
 
-	/* === Current Benchmark === */
+	/* === INA219 Benchmark === */
 
-	PendulumINA219Monitor pendulumMonitor(&ina219t, pendulum, &htim7, TimeUnit::Microseconds, 3.f);
+	PendulumINA219Monitor pendulumMonitor(&ina219t, pendulum, &htim7, TimeUnit::Milliseconds, 3.f);
 	INA219Bench inferenceEnergyBench(inferenceBenchWrapper, &pendulumMonitor);
 
 	std::cout << "Press user push button to start benchmarks" << std::endl << std::endl;
