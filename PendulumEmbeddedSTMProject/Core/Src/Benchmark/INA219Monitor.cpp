@@ -60,7 +60,7 @@ void INA219Monitor::record(){
 
 
 void INA219Monitor::writeHeader(){
-	std::cout << "TimeUnit : " << getTimeUnitString(this->timerUnit) << "\tTimerMultiplier : " << this->timerMultiplier << std::endl;
+	std::cout << "dataTimeUnit : " << getTimeUnitString(this->timerUnit) << "\tdataTimerMultiplier : " << this->timerMultiplier << std::endl;
 	std::cout << "Current\tPower" << std::endl;
 }
 

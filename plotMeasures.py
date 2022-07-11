@@ -66,7 +66,7 @@ floatRegex = "-?\d+\.?\d*"
 integerRegex = "-?\d+"
 textRegex = "[a-zA-Z]+"
 lineRegex = f"({integerRegex})\t({floatRegex})\t({floatRegex})"
-paramRegex = f"TimeUnit : ({textRegex})\tTimerMultiplier : ({floatRegex})\tStartPosition : {floatRegex}\tStartVelocity : {floatRegex}"
+paramRegex = f"dataTimeUnit : ({textRegex})\tdataTimerMultiplier : ({floatRegex})\tStartAngle : {floatRegex}\tStartVelocity : {floatRegex}"
 headerLine = "Step\tCurrent\tPower"
 inferenceTimingLine = f"=== T_{textRegex} : \d* {textRegex}"
 
