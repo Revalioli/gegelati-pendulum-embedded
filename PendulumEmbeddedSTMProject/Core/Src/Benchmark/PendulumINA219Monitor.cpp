@@ -24,9 +24,9 @@ void PendulumINA219Monitor::flushHistory() {
 }
 
 void PendulumINA219Monitor::writeHeader() {
-	std::cout << "TimeUnit : " << getTimeUnitString(this->timerUnit)
-			<< "\tTimerMultiplier : " << this->timerMultiplier
-			<< "\tStartPosition : " << this->env.getAngle()			// Environment state before calling the bench function
+	std::cout << "dataTimeUnit : " << getTimeUnitString(this->timerUnit)
+			<< "\tdataTimerMultiplier : " << this->timerMultiplier
+			<< "\tStartAngle : " << this->env.getAngle()			// Environment state before calling the bench function
 			<< "\tStartVelocity : " << this->env.getVelocity()
 			<< std::endl;
 	std::cout << "Step\tCurrent\tPower" << std::endl;

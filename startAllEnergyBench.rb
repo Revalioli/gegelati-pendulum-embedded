@@ -3,6 +3,8 @@
 require 'fileutils'
 require 'serialport'
 
+require_relative 'logToJson'
+
 # =====[ Script parameters ]=====
 
 # Set here the compiler path and program dependencies command
@@ -138,10 +140,13 @@ valid_TPG_directories.each { |tpgDirName|
     logFile.close
 
 
-    # === Analysing resuts ===
+    # === Analysing and export data ===
 
     `./plotMeasures.py #{logPath} -S #{tpgDirName} -p #{currentTime}`
     checkExitstatus
+
+    logToJson(logPath, "#{tpgDirName}/#{currentTime}_data.json")
+    
 
     File.open("#{tpgDirName}/#{currentTime}_measuresStats.md").each_line { |line|
         
