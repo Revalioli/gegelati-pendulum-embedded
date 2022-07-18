@@ -20,3 +20,6 @@ picocom.log
 
 *Project.toml
 *Manifest.toml
+
+# Others
+.vscode/
