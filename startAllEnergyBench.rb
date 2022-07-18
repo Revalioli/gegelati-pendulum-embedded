@@ -27,7 +27,7 @@ def checkCodeGenFiles directoryName
     # Returns true if directoryName contains files pendulum.c, pendulum.h, pendulum_program.c and pendulum_program.h
 
     ["pendulum.c", "pendulum.h", "pendulum_program.c", "pendulum_program.h"].each { |f|
-        return false if not File.exist? directoryName+'/'+f
+        return false unless File.exist? directoryName+'/'+f
     }
 
     return true
@@ -73,31 +73,11 @@ currentTime = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
 
 valid_TPG_directories.each { |tpgDirName|
 
-    # === Moving file for compilation ===
-
-    # Source files
-    dest = "PendulumEmbeddedSTMProject/Core/Src/Pendulum"
-    ["pendulum.c", "pendulum_program.c"].each { |f|
-        src = tpgDirName + '/' + f
-
-        FileUtils.cp(src, dest)
-    }
-
-
-    # Header files
-    dest = "PendulumEmbeddedSTMProject/Core/Inc/Pendulum"
-    ["pendulum.h", "pendulum_program.h"].each { |f|
-        src = tpgDirName + '/' + f
-
-        FileUtils.cp(src, dest)
-    }
-
-
     # === Compiling executable ===
 
     # No matter the TPG, the program on the STM32 will always initialise itself the same way, so as its random number generator.
     # We want the TPGs to have random initial state, so the seed use to initialise it is geerated via this ruby script
-    system("make all -C ./bin TPG_SEED=#{rand(C_UINT_MAX)}")
+    system("make all -C ./bin TPG_SEED=#{rand(C_UINT_MAX)} TPG_CODEGEN_PATH=../#{tpgDirName}")
     checkExitstatus
 
     src = "bin/PendulumEmbeddedMeasures.elf"
@@ -131,7 +111,7 @@ valid_TPG_directories.each { |tpgDirName|
             puts line
             logFile << line
 
-            continue = false if line == "END\r\n"
+            continue = (line != "END\r\n")
         end
     }
     logFile.close

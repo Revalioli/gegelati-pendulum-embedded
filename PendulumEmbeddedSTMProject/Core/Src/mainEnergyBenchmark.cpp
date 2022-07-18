@@ -31,9 +31,6 @@
 #include <unistd.h>
 
 #include "PendulumEnvironment.h"
-extern "C" {
-	#include "pendulum_program.h"
-}
 
 #include "TimingBench.h"
 #include "INA219Bench.h"
