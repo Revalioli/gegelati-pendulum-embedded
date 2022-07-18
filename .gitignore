@@ -15,3 +15,8 @@ PastResults/
 picocom.log
 *.o
 *.elf
+
+# Julia dependencies and project files
+
+*Project.toml
+*Manifest.toml
