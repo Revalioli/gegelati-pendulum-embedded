@@ -99,8 +99,6 @@ valid_TPG_directories.each { |tpgDirName|
 
     logFile = File.open(logPath, "w+");
     SerialPort.open(serialPortPath, baud = 115200) { |serialport|
-        serialport.flush_input  # In case there is already something in the buffer
-
         until (serialport.readline == "START\r\n") do end   # Waiting for STM32 to synchronise
         serialport << "\n"  # The STM32 is waiting for a newline character, which will start the inference
 
