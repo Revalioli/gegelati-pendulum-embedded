@@ -3,21 +3,21 @@
 require 'fileutils'
 require 'serialport'
 
-require_relative 'logToJson'
+require_relative 'scripts/logToJson'
+
+
 
 # =====[ Script parameters ]=====
-
-# Set here the compiler path and program dependencies command
-compilerDirPath = "/opt/st/stm32cubeide_1.9.0/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.linux64_1.0.0.202111181127/tools/bin"
-stm32ProgrammerCmd = "STM32_Programmer_CLI"
 
 # Path to the serial port corresponding to the STM32 board
 serialPortPath = "/dev/ttyACM0"
 
-# Set to true if you want to display the complete 
+# Set to true if you want to display generated graphs. Image files will still be generated.
 showGraph = true
 
 # ===============================
+
+
 
 
 C_UINT_MAX = 4294967295     # C language max unsigned int constant value from limits.h
@@ -95,9 +95,6 @@ valid_TPG_directories.each { |tpgDirName|
 
     # === Compiling executable ===
 
-    # Adds comiler path in PATH environment variable, so the make subprocess will inherit
-    ENV["PATH"] = compilerDirPath + ':' + ENV["PATH"]
-
     # No matter the TPG, the program on the STM32 will always initialise itself the same way, so as its random number generator.
     # We want the TPGs to have random initial state, so the seed use to initialise it is geerated via this ruby script
     system("make all -C ./bin TPG_SEED=#{rand(C_UINT_MAX)}")
@@ -110,7 +107,7 @@ valid_TPG_directories.each { |tpgDirName|
     # === Loading program on STM32 flash memory ===
     # Loading is done using STM32_Programer_CLI which must be already install
 
-    system("#{stm32ProgrammerCmd} -c port=SWD -w #{tpgDirName}/PendulumEmbeddedMeasures.elf -rst")
+    system("STM32_Programmer_CLI -c port=SWD -w #{tpgDirName}/PendulumEmbeddedMeasures.elf -rst")
     checkExitstatus
 
 
@@ -142,7 +139,7 @@ valid_TPG_directories.each { |tpgDirName|
 
     # === Analysing and export data ===
 
-    `./plotMeasures.py #{logPath} -S #{tpgDirName} -p #{currentTime}`
+    `./scripts/plotMeasures.py #{logPath} -S #{tpgDirName} -p #{currentTime}`
     checkExitstatus
 
     logToJson(logPath, "#{tpgDirName}/#{currentTime}_data.json")
