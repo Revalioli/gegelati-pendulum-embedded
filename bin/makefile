@@ -4,13 +4,6 @@ EXECUTABLE_NAME:=PendulumEmbeddedMeasures.elf
 -include sources.mk
 -include $(SUBDIRS_MK)
 
-# -include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
-# -include Core/Startup/subdir.mk
-# -include Core/Src/Peripherals/subdir.mk
-# -include Core/Src/Pendulum/subdir.mk
-# -include Core/Src/Benchmark/subdir.mk
-# -include Core/Src/subdir.mk
-
 # All Target
 all: main-build
 
