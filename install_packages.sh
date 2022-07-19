@@ -12,4 +12,4 @@ pip install matplotlib
 # Julia packages
 echo -e "\e[1;92m====[ Installing Julia packages ]=====\e[0m"
 cd ./scripts
-./install_julia_packages.jl
+julia install_julia_packages.jl
