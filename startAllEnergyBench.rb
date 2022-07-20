@@ -45,13 +45,14 @@ valid_TPG_directories = []  # Store all subdirectories path containing the requi
 Dir.open("TPG") { |d|
 
     d.each_child { |child|
-        path = d.path + '/' + child
+        tpgDirName = d.path + '/' + child
+        path = tpgDirName + "/CodeGen"
         
         if File.directory? path
             if checkCodeGenFiles(path)
-                valid_TPG_directories << path
+                valid_TPG_directories << tpgDirName
             else
-                puts "Directory #{child} us missing one or more TPG files"
+                puts "Directory #{child} is missing one or more TPG files"
             end
         end
     }
@@ -77,25 +78,28 @@ valid_TPG_directories.each { |tpgDirName|
 
     # No matter the TPG, the program on the STM32 will always initialise itself the same way, so as its random number generator.
     # We want the TPGs to have random initial state, so the seed use to initialise it is geerated via this ruby script
-    system("make all -C ./bin TPG_SEED=#{rand(C_UINT_MAX)} TPG_CODEGEN_PATH=../#{tpgDirName}")
+    system("make all -C ./bin TPG_SEED=#{rand(C_UINT_MAX)} TPG_CODEGEN_PATH=../#{tpgDirName}/CodeGen")
     checkExitstatus
 
-    src = "bin/PendulumEmbeddedMeasures.elf"
-    FileUtils.cp(src, tpgDirName)
+    srcElf = "bin/PendulumEmbeddedMeasures.elf"
+    destElf = "#{tpgDirName}/CodeGen"
+    FileUtils.cp(srcElf, destElf)
 
 
     # === Loading program on STM32 flash memory ===
     # Loading is done using STM32_Programer_CLI which must be already install
 
-    system("STM32_Programmer_CLI -c port=SWD -w #{tpgDirName}/PendulumEmbeddedMeasures.elf -rst")
+    system("STM32_Programmer_CLI -c port=SWD -w #{destElf}/PendulumEmbeddedMeasures.elf -rst")
     checkExitstatus
 
 
     # === Launching serial interface, start inference ===
 
-    logPath = "#{tpgDirName}/#{currentTime}.log"
+    resultPath = "#{tpgDirName}/#{currentTime}_results"
+    FileUtils.mkdir(resultPath)
 
-    FileUtils.rm(logPath, force: true)  # Remove old log file if any
+    logPath = "#{resultPath}/energy.log"
+
 
     logFile = File.open(logPath, "w+");
     SerialPort.open(serialPortPath, baud = 115200) { |serialport|
@@ -117,13 +121,13 @@ valid_TPG_directories.each { |tpgDirName|
 
     # === Analysing and export data ===
 
-    `./scripts/plotMeasures.py #{logPath} -S #{tpgDirName} -p #{currentTime}`
+    `./scripts/plotMeasures.py #{logPath} -S #{resultPath}`
     checkExitstatus
 
-    logToJson(logPath, "#{tpgDirName}/#{currentTime}_data.json")
+    logToJson(logPath, "#{resultPath}/energy_data.json")
     
 
-    File.open("#{tpgDirName}/#{currentTime}_measuresStats.md").each_line { |line|
+    File.open("#{resultPath}/energy_stats.md").each_line { |line|
         
         case line
         when /Average current : (\d+\.?\d*)/

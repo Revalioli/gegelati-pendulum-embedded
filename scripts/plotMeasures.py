@@ -48,8 +48,8 @@ statsFile = None
 
 if exportResults:
     try:
-        pngFile = open(f"{exportDir}/{filePrefix}_graph.png", "w+b")
-        statsFile = open(f"{exportDir}/{filePrefix}_measuresStats.md", "w+")
+        pngFile = open(f"{exportDir}/{filePrefix}graph.png", "w+b")
+        statsFile = open(f"{exportDir}/{filePrefix}energy_stats.md", "w+")
     except FileNotFoundError as err:
         sys.exit(err)
 
