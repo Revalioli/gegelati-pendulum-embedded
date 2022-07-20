@@ -1,77 +1,61 @@
 #!/usr/bin/julia
 
-using Plots, Plots.PlotMeasures
+# using Plots, Plots.PlotMeasures
+using PlotlyJS
 using JSON3
 
+include("createPlots.jl")
 
-function setAxisColor(p::Union{Plots.Plot,Plots.Subplot}, color::Symbol, axis::Symbol = :all)
-    if axis == :x 
-        plot!(p,
-        xforeground_color_guide = color,
-        xforeground_color_axis = color,
-        xforeground_color_text = color,
-        )
-    elseif axis == :y
-        plot!(p,
-        yforeground_color_guide = color,
-        yforeground_color_axis = color,
-        yforeground_color_text = color,
-        )
-    elseif axis == :z
-        plot!(p,
-        zforeground_color_guide = color,
-        zforeground_color_axis = color,
-        zforeground_color_text = color,
-        )
-    elseif axis == :all
-        plot!(p,
-        foreground_color_guide = color,
-        foreground_color_axis = color,
-        foreground_color_text = color,
-        )
+
+# =====[ Script parameters ]=====
+
+exportPath = "."
+showPlot = false
+
+# =====[ ARGS parsing ]=====
+
+"Return the argument of an option, with i the index of the option in ARGS. Exit program if there is no argument."
+function getOptionArgument(i::Integer)
+    if i+1 <= length(ARGS) && ARGS[i+1][1] != '-'
+        return ARGS[i+1]
     else
-        println("Unknown axis")
+        println("Missing argument for option $a")
+        exit(1)
     end
 end
 
-println("LOAD_PATH : ", LOAD_PATH)
+# ARGS[1] must always be data of the energy measurements
+if length(ARGS) == 0 || ARGS[1][1] == '-'
+    println("No input datajson file was given")
+    exit(1)
+end
+
+dataPath = ARGS[1]
+
+i = 2
+while i <= length(ARGS)
+
+    a = ARGS[i]
+
+    if a == "--path"
+        global exportPath = getOptionArgument(i)
+        global i += 1
+    elseif a == "--show"
+        global showPlot = true
+    else
+        println("Unknown option $a")
+        exit(1)
+    end
+
+    global i += 1
+end
 
 
-dir = "../TPG/Trigo_1"
-measuresDataJson = JSON3.read(read("$(dir)/2022-07-19_09-51-26_data.json"))
-yTick = measuresDataJson["metadata"]["dataTimeMultiplier"]
-yUnit = measuresDataJson["metadata"]["dataTimeUnit"]
-yAxisValues = [i*yTick for i in 0:length(measuresDataJson["step"])-1]
+p = plotEnergyData(dataPath)
+savefig(p, "$exportPath/graph.png", width=1920, height=1080)
 
-
-gr(size=(1600, 800))
-
-plotCurrent = plot(yAxisValues, measuresDataJson["current"], color=:red, right_margin=100px, left_margin=50px,
-    xlabel="Execution time ($yUnit)",
-    ylabel="Curren (mA)",
-    legend=(0.8, 0.25))
-setAxisColor(plotCurrent, :red, :y)
-
-subplotStep = twinx()
-plot!(subplotStep, yAxisValues, measuresDataJson["step"], ylabel="Inference n°", color=:blue, legend=(0.8, 0.2))
-setAxisColor(subplotStep, :blue, :y)
-
-
-plotPower = plot(yAxisValues, measuresDataJson["power"], color=:green, right_margin=100px, left_margin=50px,
-    xlabel="Execution time ($yUnit)",
-    ylabel="Power (W)",
-    legend=(0.8,0.25))
-setAxisColor(plotPower, :green, :y)
-
-subplotStep = twinx()
-plot!(subplotStep, yAxisValues, measuresDataJson["step"], ylabel="Inference n°", color=:blue, legend=(0.8, 0.2))
-setAxisColor(subplotStep, :blue, :y)
-
-
-
-l = @layout [current power]
-plot(plotCurrent, plotPower,bottom_margin=30px)
-
-
-gui()
-readline()
+if showPlot
+    displayInBrowser(p)
+    println("Press enter to continue")
+    readline()
+end

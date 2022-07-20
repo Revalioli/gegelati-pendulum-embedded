@@ -7,7 +7,8 @@ PendulumEmbeddedSTMProject/ReleaseEnergyBench/
 PendulumEmbeddedSTMProject/.settings/
 
 #TPG CodeGen files
-TPG/
+TPG/**
+!TPG/README.md
 
 # Measurements analysis complation and results files
 
