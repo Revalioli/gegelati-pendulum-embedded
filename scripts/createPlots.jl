@@ -1,5 +1,5 @@
 
-function displayInBrowser(p::Plot)
+function displayInBrowser(p::Union{Plot, PlotlyJS.SyncPlot})
     open("/tmp/plotly_view.html", "w") do io
         PlotlyBase.to_html(io, p)
     end
@@ -12,7 +12,7 @@ function displayInBrowser(html_path::String)
 end
 
 
-"Return a new plot with the energy measures of a TPG."
+"Return a new plot with the energy measures data of a TPG."
 function plotEnergyData(jsonDataPath::String)
 
     measuresDataJson = JSON3.read(read(jsonDataPath))
@@ -31,7 +31,6 @@ function plotEnergyData(jsonDataPath::String)
     deleteat!(powerData, toRemove)
 
     # Set current in mA
-
     currentData.*= 1000
 
     xAxisValues = [i*yTick for i in 0:length(stepData)-1]
@@ -87,7 +86,47 @@ function plotEnergyData(jsonDataPath::String)
         ) 
     )
 
+end
 
-    return plotCurrent
+function plotExecutionData(jsonDataPath::String)
+
+    data = JSON3.read(read(jsonDataPath))
+
+    # =====[ Averages ]======
+
+    avgStats = data["AverageStats"]
+    field_texts = ["Average evaluated programs", "Average evaluated teams", "Average executed lines"]
+    field_keys = ["avgEvaluatedPrograms", "avgEvaluatedPrograms", "avgEvaluatedPrograms"]
+
+    table_averages = table(
+        cells_values = [
+            field_texts,
+            [avgStats[d] for d in field_keys]
+        ],
+    )
+
+    instruction_averages = table(
+        header_values = [ "Instruction index", "Average executions"],
+        cells_values = [
+            keys(avgStats["avgNbExecutionPerInstruction"]),
+            [ values(avgStats["avgNbExecutionPerInstruction"])... ]
+        ],
+    )
+
+    statsPlot = make_subplots(rows=2, cols=2, specs = [Spec(kind="domain") missing; Spec(kind="domain") missing] );
+    add_trace!(
+        statsPlot,
+        table_averages,
+        row=1, col=1
+    )
+
+    add_trace!(
+        statsPlot,
+        instruction_averages,
+        row=2, col=1
+    )
+
+    statsPlot
+
 
 end
