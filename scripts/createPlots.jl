@@ -7,6 +7,10 @@ function displayInBrowser(p::Plot)
     run(`xdg-open /tmp/plotly_view.html`)
 end
 
+function displayInBrowser(html_path::String)
+    run(`xdg-open $html_path`)
+end
+
 
 "Return a new plot with the energy measures of a TPG."
 function plotEnergyData(jsonDataPath::String)
@@ -62,6 +66,8 @@ function plotEnergyData(jsonDataPath::String)
                 title_color="green",
                 side="right",
                 overlaying="y",
+
+                range = (0, 0.2),
 
                 title_font_color="green",
                 tickfont_color="green",

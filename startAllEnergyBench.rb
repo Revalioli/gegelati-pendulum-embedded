@@ -119,37 +119,43 @@ valid_TPG_directories.each { |tpgDirName|
     logFile.close
 
 
-    # === Analysing and export data ===
-
-    `./scripts/plotMeasures.py #{logPath} -S #{resultPath}`
-    checkExitstatus
+    # === Export additional data ===
 
     logToJson(logPath, "#{resultPath}/energy_data.json")
-    
 
-    File.open("#{resultPath}/energy_stats.md").each_line { |line|
+    # TODO Generate energy_stats.md from a julia script to stop using the python script
+
+    # `./scripts/plotMeasures.py #{logPath}`
+    # checkExitstatus
+
+    # File.open("#{resultPath}/energy_stats.md").each_line { |line|
         
-        case line
-        when /Average current : (\d+\.?\d*)/
-            currentAvgs[tpgDirName] = $1.to_f
-        when /Average power consumption : (\d+\.?\d*)/
-            powerAvgs[tpgDirName] = $1.to_f
-        when /Average step time : (\d+\.?\d*) ([a-zA-Z]*)/
-            stepTimeAvgs[tpgDirName] = $1.to_f
-            timeUnits[tpgDirName] = $2
-        end
-    }.close
+    #     case line
+    #     when /Average current : (\d+\.?\d*)/
+    #         currentAvgs[tpgDirName] = $1.to_f
+    #     when /Average power consumption : (\d+\.?\d*)/
+    #         powerAvgs[tpgDirName] = $1.to_f
+    #     when /Average step time : (\d+\.?\d*) ([a-zA-Z]*)/
+    #         stepTimeAvgs[tpgDirName] = $1.to_f
+    #         timeUnits[tpgDirName] = $2
+    #     end
+    # }.close
 
 }
 
 
 # Displaying global results
 
-puts "===[ Results summary ]==="
+# puts "===[ Results summary ]==="
 
-valid_TPG_directories.sort!.each { |tpgDirName|
-    puts "#{tpgDirName}"
-    puts "\tAverage current : #{currentAvgs[tpgDirName].round(4)}"
-    puts "\tAverage power consumption : #{powerAvgs[tpgDirName].round(4)}"
-    puts "\tAverage step time : #{stepTimeAvgs[tpgDirName].round(4)} #{timeUnits[tpgDirName]}"
-}
+# valid_TPG_directories.sort!.each { |tpgDirName|
+#     puts "#{tpgDirName}"
+#     puts "\tAverage current : #{currentAvgs[tpgDirName].round(4)}"
+#     puts "\tAverage power consumption : #{powerAvgs[tpgDirName].round(4)}"
+#     puts "\tAverage step time : #{stepTimeAvgs[tpgDirName].round(4)} #{timeUnits[tpgDirName]}"
+# }
+
+
+# === Analysing data, plotting graphs ===
+
+system("julia --project ./scripts/generateEnergyPlots.jl --show")
