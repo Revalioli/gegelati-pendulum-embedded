@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.19)
 
 set(PROJECT_NAME Trainer_Generator)
 project(${PROJECT_NAME})
@@ -56,7 +56,9 @@ set(GENERATE_TARGET Generator)
 add_executable(${GENERATE_TARGET} src/mainGenerator.cpp ${files})
 target_link_libraries(${GENERATE_TARGET} ${GEGELATI_LIBRARIES})
 
-
+set(EXECUTION_STATS_TARGET ExecutionStats)
+add_executable(${EXECUTION_STATS_TARGET} src/mainExecutionStats.cpp ${files})
+target_link_libraries(${EXECUTION_STATS_TARGET} ${GEGELATI_LIBRARIES})
 
 
 # Test variables
