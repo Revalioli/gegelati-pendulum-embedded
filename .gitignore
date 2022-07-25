@@ -27,6 +27,7 @@ Trainer-Generator/bin/*
 */cmake-build-debug
 */.idea
 Trainer-Generator/to_train/*/Results
+Trainer-Generator/params.json
 
 # Others
 .vscode/

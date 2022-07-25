@@ -54,6 +54,13 @@ void Pendulum::reset(size_t seed, Learn::LearningMode mode)
 	this->totalReward = 0.0;
 }
 
+void Pendulum::reset(double initalAngle, double initialVelocity){
+    this->setAngle(initalAngle);
+    this->setVelocity(initialVelocity);
+    this->nbActionsExecuted = 0;
+    this->totalReward = 0.0;
+}
+
 double Pendulum::getActionFromID(const uint64_t& actionID)
 {
 	double result = (actionID == 0) ? 0.0 : this->availableActions.at((actionID - 1) % availableActions.size());
