@@ -11,16 +11,22 @@ TPG/**
 !TPG/README.md
 
 # Measurements analysis complation and results files
-
 PastResults/
 picocom.log
 *.o
 *.elf
 
 # Julia dependencies and project files
-
 *Project.toml
 *Manifest.toml
+
+# CLion project for training TPG, genrating codegen and analyse execution with GEGELATI
+Trainer-Generator/bin/*
+!Trainer-Generator/bin/dummy
+*/cmake-build-release
+*/cmake-build-debug
+*/.idea
+Trainer-Generator/to_train/*/Results
 
 # Others
 .vscode/
