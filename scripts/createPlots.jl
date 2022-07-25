@@ -88,6 +88,14 @@ function plotEnergyData(jsonDataPath::String)
 
 end
 
+
+function sortSymbolsAsInt!(a::AbstractVector{Symbol})
+
+    sort!(a,lt = (x,y) -> parse(Int, string(x)) < parse(Int, string(y)))
+
+end
+
+
 "Return a tuple with two plots displaying the executions statistics provided."
 function plotExecutionData(jsonDataPath::String)
 
@@ -108,30 +116,26 @@ function plotExecutionData(jsonDataPath::String)
         ],
     )
 
-    instIdx = keys(execStats["distributionUsedVertices"])
+    instIdx = keys(execStats["distributionUsedVertices"]) |> collect |> sortSymbolsAsInt!
     distrib_visited_teams = bar(
-        name = "Number of inferences where each vertex was used",
         x = instIdx,
         y = [execStats["distributionUsedVertices"][i] for i in instIdx],
     )
 
-    instIdx = keys(execStats["distributionEvaluatedTeams"])
+    instIdx = keys(execStats["distributionEvaluatedTeams"]) |> collect |> sortSymbolsAsInt!
     distrib_evaluated_teams = bar(
-        name = "Number of inferences per number of evaluated teams",
         x = instIdx,
         y = [execStats["distributionEvaluatedTeams"][i] for i in instIdx],
     )
 
-    instIdx = keys(execStats["distributionEvaluatedPrograms"])
+    instIdx = keys(execStats["distributionEvaluatedPrograms"]) |> collect |> sortSymbolsAsInt!
     distrib_evaluated_programs = bar(
-        name = "Number of inferences per number of evaluated programs",
         x = instIdx,
         y = [execStats["distributionEvaluatedPrograms"][i] for i in instIdx],
     )
 
-    instIdx = keys(execStats["distributionExecutedLines"])
+    instIdx = keys(execStats["distributionExecutedLines"]) |> collect |> sortSymbolsAsInt!
     distrib_executed_lines = bar(
-        name = "Number of inferences per number of executed lines",
         x = instIdx,
         y = [execStats["distributionExecutedLines"][i] for i in instIdx],
     )
@@ -140,11 +144,12 @@ function plotExecutionData(jsonDataPath::String)
 
     # === For Instruction plot ===
 
+    instIdx = keys(execStats["avgNbExecutionPerInstruction"]) |> collect |> sortSymbolsAsInt!
     table_instruction_averages = table(
         header_values = [ "Instruction index", "Average executions"],
         cells_values = [
-            keys(execStats["avgNbExecutionPerInstruction"]),
-            [ values(execStats["avgNbExecutionPerInstruction"])... ]
+            instIdx,
+            [ execStats["avgNbExecutionPerInstruction"][i] for i in instIdx ]
         ],
     )
 
@@ -168,10 +173,14 @@ function plotExecutionData(jsonDataPath::String)
 
         pairs = [(key, val) for (key, val) in dist_object]
 
+        idx = keys(dist_object) |> collect |> sortSymbolsAsInt!
+
         trace = bar(
             name = instruction_idx,
-            x = [key for (key, _) in pairs],
-            y = [val for (_, val) in pairs]
+            # x = [key for (key, _) in pairs],
+            # y = [val for (_, val) in pairs],
+            x = idx,
+            y = [dist_object[val] for val in idx],
         )
         push!(bar_instructions, trace)
         push!(bar_instructions_titles, "Instruction $instruction_idx")
@@ -193,7 +202,14 @@ function plotExecutionData(jsonDataPath::String)
             Spec(kind="xy")                 Spec(kind="xy")
             Spec(kind="xy")                 Spec(kind="xy")
         ],
-        row_heights = [0.45, 0.45, 0.1]
+        subplot_titles = [
+            missing                                             "Number of inferences per number of evaluated programs"
+            "Number of inferences where each vertex was used"   "Number of inferences per number of executed lines"
+            "Number of inferences per number of evaluated teams" missing
+        ],
+        row_heights = [0.45, 0.45, 0.1],
+        vertical_spacing = 0.05,
+        horizontal_spacing = 0.05,
     );
 
     add_trace!(
@@ -224,7 +240,8 @@ function plotExecutionData(jsonDataPath::String)
 
     relayout!(
         topologyPlot,
-        title_text = "Execution Stats"
+        title_text = "Execution Stats",
+        showlegend = false,
     )
 
 
@@ -249,8 +266,10 @@ function plotExecutionData(jsonDataPath::String)
         rows = nbRow, cols = nbCol,
         column_widths = [averageColumnWidth; fill( (1-averageColumnWidth) / (nbCol-1) , nbCol-1)],
         specs = specsArr,
+        vertical_spacing = 0.05,
+        horizontal_spacing = 0.05,
         
-        subplot_titles = subplot_titles_matrix
+        subplot_titles = subplot_titles_matrix,
     );
     
     add_trace!(
@@ -270,7 +289,7 @@ function plotExecutionData(jsonDataPath::String)
     relayout!(
         instructionPlot,
         title_text = "Instruction stats",
-        show_legend = false,
+        showlegend = false,
     )
 
     (topologyPlot, instructionPlot)
