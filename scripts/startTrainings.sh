@@ -13,7 +13,8 @@ SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 cd $SCRIPT_DIR/../Trainer-Generator     # Train-Generator
 
 # CMake configuration
-rm -r bin/*
+rm -r bin
+mkdir bin
 cd bin
 cmake ..
 checkExitStatus
