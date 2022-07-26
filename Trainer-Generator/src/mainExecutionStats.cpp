@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 #include <string>
 #include <gegelati.h>
 
@@ -13,15 +14,17 @@ int main(int argc, char *argv[]) {
 
     /*
      * This program need 3 to 4 arguments :
-     * - argv[1] : path to the dot file of the TPG to be used, if relative path, starts from call pwd
+     * - argv[1] : path to the .dot file of the TPG to be used, if relative path, starts from call pwd
      * - argv[2] : initial angle
      * - argv[3] : initial velocity
      * - argv[4] : number of inferences to do (default in 1000)
+     *
+     * The executionStats.json file is generated in the same directory as the .dot file.
      */
 
     std::cout << "=====[ Execution statistics target ]=====" << std::endl << std::endl;
 
-    /* CHecking arguments */
+    /* Checking arguments */
 
     if(argc < 4){
         std::cerr << "Missing arguments, this program needs (in order) : the path to the .dot file, the initial angle"
@@ -31,7 +34,7 @@ int main(int argc, char *argv[]) {
 
     double initalAngle;
     double initialVelocity;
-    std::string dotPath(argv[1]);
+    std::filesystem::path dotPath(argv[1]);
     int nbActions = DEFAULT_NB_ACTIONS;
 
     try{
@@ -108,7 +111,7 @@ int main(int argc, char *argv[]) {
 
     TPG::ExecutionStats executionStats;
     executionStats.analyzeExecution(tee, &dotGraph);
-    executionStats.writeStatsToJson("executionStats.json");
+    executionStats.writeStatsToJson( (dotPath.parent_path().string() + "/executionStats.json").c_str() );
 
     std::cout << "End program" << std::endl;
 
