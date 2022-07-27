@@ -1,8 +1,13 @@
 #!/usr/bin/ruby
 
+# Built-in gems
 require 'fileutils'
-require 'serialport'
 require 'optparse'
+require 'json'
+
+
+require 'serialport'
+
 
 require_relative 'scripts/logToJson'
 
@@ -14,7 +19,7 @@ require_relative 'scripts/logToJson'
 serialPortPath = "/dev/ttyACM0"
 
 # Set to true if you want to display generated graphs. Image files will still be generated.
-showGraph = true
+showGraph = false
 
 # ===============================
 
@@ -79,7 +84,15 @@ OptionParser.new{ |parser|
         end
     }
 
+    parser.on("--show"){
+        showGraph = true
+    }
+
 }.parse!
+
+
+
+Dir.chdir "#{__dir__}"  # Set current script current directory, so we can execute it from everywhere
 
 
 # =====[ CodeGen stage ]=====
@@ -177,10 +190,10 @@ if stages["Measures"]
 
 
         # === Compute averages statistics for display at end of measurements
-        system("julia --project ./scripts/computeEnergyStats.jl #{dataPath}")
+        system("julia --project ./scripts/compute_energy_summary.jl #{dataPath}")
         checkExitstatus
     
-        File.open("#{resultPath}/energy_stats.md").each_line { |line|
+        File.open("#{resultPath}/energy_summary.md").each_line { |line|
             
             case line
             when /Average current : (\d+\.?\d*) A/
@@ -212,14 +225,37 @@ end
 
 
 
-# =====[ Analysis stage ]=====
-
+# =====[ Analysis stage ]=====ExecutionStats
 
 if stages["Analysis"]
 
     puts "\033[1;31m=====[ Analysis stage ]=====\033[0m"
-    
-    puts "TODO analyse execution"
+
+    Dir.glob("TPG/*/*_results")
+        .filter { |d| not File.exist? "#{d}/executionStats.json"}
+        .each { |d|
+            
+            codeGenPath = "#{d}/../CodeGen"
+
+            # Copying instructions.cpp and params.json
+            FileUtils.cp("#{codeGenPath}/instructions.cpp", "Trainer-Generator/src")
+            FileUtils.cp("#{codeGenPath}/params.json", "Trainer-Generator")
+
+            # CMake ExecutionStats target compilation
+            system("cmake --build Trainer-Generator/bin --target ExecutionStats")
+            checkExitstatus
+
+            # Get initial values from results of the energy bench
+            energyData = {}
+            File.open("#{d}/energy_data.json") { |io| energyData = JSON.load(io) }
+            
+            # Start replay and execution stats export for 1000 inferences
+            system("./Trainer-Generator/bin/Release/ExecutionStats #{codeGenPath}/out_best.dot #{energyData["metadata"]["startAngle"]} #{energyData["metadata"]["startVelocity"]}")
+            checkExitstatus
+
+            # Move executions_stats.json to result directory
+            FileUtils.mv("#{codeGenPath}/executionStats.json", "#{d}")
+        }
 
 end
 
@@ -230,6 +266,11 @@ if stages["PlotResults"]
     
     puts "\033[1;31m=====[ PlotResults stage ]=====\033[0m"
     
-    system("julia --project ./scripts/generateEnergyPlots.jl")
-
+    if showGraph
+        system("julia --project ./scripts/generateEnergyPlots.jl --show")
+        checkExitstatus
+    else
+        system("julia --project ./scripts/generateEnergyPlots.jl")
+        checkExitstatus
+    end
 end

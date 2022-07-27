@@ -38,7 +38,7 @@ function plotEnergyData(jsonDataPath::String)
 
     # ===[ Plotting ]===
 
-    plotCurrent = Plot(
+    Plot(
         
         [
             scatter(x = xAxisValues, y = currentData, name="Current (mA)", modes="lines", line_color="red", yaxis="y1"), 
