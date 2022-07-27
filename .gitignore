@@ -22,11 +22,11 @@ picocom.log
 
 # CLion project for training TPG, genrating codegen and analyse execution with GEGELATI
 Trainer-Generator/bin/*
-!Trainer-Generator/bin/dummy
 */cmake-build-release
 */cmake-build-debug
 */.idea
-Trainer-Generator/to_train/*/Results
+Trainer-Generator/to_train/*
+!Trainer-Generator/to_train/README.md
 Trainer-Generator/params.json
 
 # Others
