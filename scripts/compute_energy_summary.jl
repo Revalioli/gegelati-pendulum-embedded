@@ -16,7 +16,7 @@ deleteat!(powerData, toRemove)
 avgCurrent = sum(currentData) / length(currentData)
 avgPower = sum(powerData) / length(powerData)
 
-open("$(dirname(dataPath))/energy_stats.md", "w") do io
+open("$(dirname(dataPath))/energy_summary.md", "w") do io
     write(io, "# Energy statistics\n")
     write(io, "Average current : $(avgCurrent) A\n")
     write(io, "Average power : $(avgPower) W\n")

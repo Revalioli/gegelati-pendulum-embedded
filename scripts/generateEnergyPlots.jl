@@ -11,7 +11,11 @@ showPlot = false
 
 # =====[ ARGS parsing ]=====
 
-"Return the argument of an option, with i the index of the option in ARGS. Exit program if there is no argument."
+"""
+    getOptionArgument(i::Integer)
+
+Return the argument of an option, with i the index of the option in ARGS. Exit program if there is no argument.
+"""
 function getOptionArgument(i::Integer)
     if i+1 <= length(ARGS) && ARGS[i+1][1] != '-'
         return ARGS[i+1]
@@ -37,25 +41,48 @@ while i <= length(ARGS)
 end
 
 
+# =====[ Searching results path ]=====
+
 # Searching results paths with the energy_data.json file
 
-valid_result_paths = [] # Valid paths to all energy_data.json files
+all_result_paths = []
 
-isresultdir(fullPath::String) = occursin(r"^.*[0-9\-_]*_results$", fullPath)
-isdirtoevaluate(fullPath::String) = isfile(fullPath * "/energy_data.json") && !isfile(fullPath * "/graph.html") && !isfile(fullPath * "/graph.png")
+isResultDir(fullPath::String) = occursin(r"^.*[0-9\-_]*_results$", fullPath)
 
 cd((@__DIR__) * "/../TPG") do 
 
-    tpgDirs = filter(isdir, readdir(join=true))
+    tpgDirs = filter(isdir, readdir(join=true))     # Get all TPG subdirectories
 
-    for p in tpgDirs
+    for p in tpgDirs    # Get all results directories for all TPGs
 
         readdir(p, join=true) |>
-            dirs -> filter(isresultdir, dirs) |>
-            resDirs -> filter(isdirtoevaluate, resDirs) |>
-            validDirs -> append!(valid_result_paths, validDirs .* "/energy_data.json")
+            dirs -> filter(isResultDir, dirs) |>
+            resultDirs -> append!(all_result_paths, resultDirs)
 
     end
+
+end
+
+"""
+    filterByFiles!(dirPath::String, requiredFiles::Vector{String}, excludedFiles::Vector{String})
+
+Return if a directory has all required files and doesn't have all exlcuded files.
+"""
+function checkFiles(dirPath::String, requiredFiles::Vector{String}, excludedFiles::Vector{String}=[])
+
+    missingFile = findfirst(requiredFiles) do file
+        !isfile(dirPath * "/" * file)
+    end
+
+    if !isnothing(missingFile)
+        return false
+    end
+
+    unexpectedFile = findfirst(excludedFiles) do file
+        isfile(dirPath * "/" * file)
+    end
+
+    return isnothing(unexpectedFile)
 
 end
 
@@ -63,19 +90,83 @@ end
 # =====[ Plotting ]=====
 
 
-for path in valid_result_paths
+# === Measurments plot ===
 
-    graph = plotEnergyData(path)
-    savefig(graph, "$(dirname(path))/graph.png", width=1920, height=1080)
+requiredFiles = [
+    "energy_data.json"
+]
+
+excludedFiles = [
+    "graph.html",
+    "graph.png"
+]
+
+valid_result_paths = filter(
+    path -> checkFiles(path, requiredFiles, excludedFiles),
+    all_result_paths
+)
+
+println("Creating measurement plots for :")
+for p in valid_result_paths
+    println("- ", p)
+end
+
+for resultDirPath in valid_result_paths
+
+    graph = plotEnergyData("$resultDirPath/energy_data.json")
+    savefig(graph, "$resultDirPath/graph.png", width=1920, height=1080)
     
-    # Saving html version
-    open("$(dirname(path))/graph.html", "w") do io
+    # Saving html files
+    open("$resultDirPath/graph.html", "w") do io
         PlotlyBase.to_html(io, graph)
     end
 
     if showPlot
-        displayInBrowser("$(dirname(path))/graph.html")
+        displayInBrowser("$resultDirPath/graph.html")
         println("Press enter to continue")
         readline()
     end
+end
+
+
+# === Execution plots ===
+
+requiredFiles = [
+    "executionStats.json"
+]
+
+excludedFiles = [
+    "execution_stats.html",
+    "instructions_stats.html"
+]
+
+valid_result_paths = filter(
+    path -> checkFiles(path, requiredFiles, excludedFiles),
+    all_result_paths
+)
+
+println("Creating execution stats plots for :")
+for p in valid_result_paths
+    println("- ", p)
+end
+
+for resultDirPath in valid_result_paths
+
+    executionPlot, instructionPlot = plotExecutionData("$resultDirPath/executionStats.json")
+
+    # Saving html files
+    open("$resultDirPath/execution_stats.html", "w") do io
+        PlotlyBase.to_html(io, executionPlot.plot)
+    end
+    open("$resultDirPath/instructions_stats.html", "w") do io
+        PlotlyBase.to_html(io, instructionPlot.plot)
+    end
+
+    if showPlot
+        displayInBrowser("$resultDirPath/execution_stats.html")
+        displayInBrowser("$resultDirPath/instructions_stats.html")
+        println("Press enter to continue")
+        readline()
+    end
+
 end
