@@ -126,6 +126,7 @@ if stages["Measures"]
     powerAvgs = {}
     stepTimeAvgs = {}
     timeUnits = {}
+    totalEnergyConsumption = {}
 
     currentTime = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
 
@@ -200,9 +201,11 @@ if stages["Measures"]
                 currentAvgs[tpgDirName] = $1.to_f
             when /Average power : (\d+\.?\d*) W/
                 powerAvgs[tpgDirName] = $1.to_f
-            # when /Average step time : (\d+\.?\d*) ([a-zA-Z]*)/    # TODO implement this in julia script
-            #     stepTimeAvgs[tpgDirName] = $1.to_f
-            #     timeUnits[tpgDirName] = $2
+            when /Average step execution time : (\d+\.?\d*) ([a-zA-Z]*)/    # TODO implement this in julia script
+                stepTimeAvgs[tpgDirName] = $1.to_f
+                timeUnits[tpgDirName] = $2
+            when /Total energy consumption : (\d+\.?\d*) J/
+                totalEnergyConsumption[tpgDirName] = $1.to_f
             end
         }.close
     
@@ -218,7 +221,8 @@ if stages["Measures"]
         puts "#{tpgDirName}"
         puts "\tAverage current : #{(currentAvgs[tpgDirName] * 1000).round(4)} mA"
         puts "\tAverage power : #{powerAvgs[tpgDirName].round(4)} W"
-        # puts "\tAverage step time : #{stepTimeAvgs[tpgDirName].round(4)} #{timeUnits[tpgDirName]}"
+        puts "\tAverage step execution time : #{stepTimeAvgs[tpgDirName].round(4)} #{timeUnits[tpgDirName]}"
+        puts "\tTotal energy consumption : #{(totalEnergyConsumption[tpgDirName] * 1000).round(4)} mJ"
     }
 
 end
