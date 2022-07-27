@@ -173,12 +173,10 @@ function plotExecutionData(jsonDataPath::String)
 
         pairs = [(key, val) for (key, val) in dist_object]
 
-        idx = keys(dist_object) |> collect |> sortSymbolsAsInt!
+        idx = keys(dist_object) |> collect # |> sortSymbolsAsInt!
 
         trace = bar(
             name = instruction_idx,
-            # x = [key for (key, _) in pairs],
-            # y = [val for (_, val) in pairs],
             x = idx,
             y = [dist_object[val] for val in idx],
         )
@@ -202,14 +200,14 @@ function plotExecutionData(jsonDataPath::String)
             Spec(kind="xy")                 Spec(kind="xy")
             Spec(kind="xy")                 Spec(kind="xy")
         ],
-        subplot_titles = [
-            missing                                             "Number of inferences per number of evaluated programs"
-            "Number of inferences where each vertex was used"   "Number of inferences per number of executed lines"
-            "Number of inferences per number of evaluated teams" missing
-        ],
+        # subplot_titles = [
+        #     missing                                             "Number of inferences per number of evaluated programs"
+        #     "Number of inferences where each vertex was used"   "Number of inferences per number of executed lines"
+        #     "Number of inferences per number of evaluated teams" missing
+        # ],
         row_heights = [0.45, 0.45, 0.1],
-        vertical_spacing = 0.05,
-        horizontal_spacing = 0.05,
+        vertical_spacing = 0.07,
+        horizontal_spacing = 0.04,
     );
 
     add_trace!(
@@ -242,54 +240,62 @@ function plotExecutionData(jsonDataPath::String)
         topologyPlot,
         title_text = "Execution Stats",
         showlegend = false,
+
+        # Axis are numbered, meaning that the 5th x axis has an attribute named "xaxis5" 
+        # which can be used to change the axis attribute like any other axis (same idea with yaxis_).
+        # The only exception is for the first axis, which has no number (1st x axis = xaxis).
+        # Seems to be row ordered.
+
+        xaxis_title = "Team indexes",
+        xaxis2_title = "Number evaluated teams",
+        xaxis3_title = "Number evaluated programs",
+        xaxis4_title = "Number executed lines", 
+
+        yaxis_title = "Number of inferences",
+        yaxis2_title = "Number of inferences",
+        yaxis3_title = "Number of inferences",
+        yaxis4_title = "Number of inferences",
+
     )
 
 
     # === For Instruction plot ===
 
-    specsArr = [
-        [Spec(kind="domain", rowspan=nbRow); fill(missing, nbRow-1)] fill(Spec(kind="xy"), (nbRow, nbCol)) 
-    ]
 
     averageColumnWidth = 0.1    # Relative width of the instruction average stats on the left
 
-    # subplot_title is row-ordered (but specs is column order) and just don't count for missing places in the subplot grid
-    # This is completly stupid ...
-    # If one day they fix their doc or their module, maybe this will need to be corrected
-    subplot_titles_matrix = fill("", (nbRow, nbCol))
-    subplot_titles_matrix[1] = "This is a table"
-    for i in 1:length(bar_instructions_titles)
-        subplot_titles_matrix[i+1] =  bar_instructions_titles[i]
-    end
-
     instructionPlot = make_subplots(
-        rows = nbRow, cols = nbCol,
-        column_widths = [averageColumnWidth; fill( (1-averageColumnWidth) / (nbCol-1) , nbCol-1)],
-        specs = specsArr,
+        rows = 1, cols = 2,
+        column_widths = [0.1, 0.9],
+        specs = [ Spec(kind="domain") Spec(kind="xy") ],
         vertical_spacing = 0.05,
         horizontal_spacing = 0.05,
-        
-        subplot_titles = subplot_titles_matrix,
+        subplot_titles = [missing "Number of inferences per number of execution for each instruction"],
     );
-    
+
+
     add_trace!(
         instructionPlot,
         table_instruction_averages,
         row=1, col=1
     )
 
-    for i in 0:(length(bar_instructions)-1)
+    for trace in bar_instructions
+        # Traces can be stackd in the same subplot
         add_trace!(
             instructionPlot,
-            bar_instructions[i+1],
-            row = (i ÷ (nbCol-1)) + 1, col = (i % (nbCol-1)) + 2
+            trace,
+            row = 1, col = 2,
         )
     end
 
     relayout!(
         instructionPlot,
         title_text = "Instruction stats",
-        showlegend = false,
+        xaxis_categoryorder="array",
+        xaxis_categoryarray=1:1000,     # TODO assign maximum value found in all bar traces instead of 1000
+        xaxis_title = "Number of executions",
+        yaxis_title = "Number of inferences",
     )
 
     (topologyPlot, instructionPlot)
