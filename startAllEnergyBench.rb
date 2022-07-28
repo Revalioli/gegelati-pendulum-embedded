@@ -85,9 +85,7 @@ OptionParser.new{ |parser|
     }
 
     parser.on("--show"){
-        showGraph = true
-    }
-
+        showGraph = truedataJson
 }.parse!
 
 
@@ -124,7 +122,7 @@ if stages["Measures"]
 
     currentAvgs = {}
     powerAvgs = {}
-    stepTimeAvgs = {}
+    executionTimeAvgs = {}
     timeUnits = {}
     totalEnergyConsumption = {}
 
@@ -184,31 +182,15 @@ if stages["Measures"]
         logFile.close
     
     
-        # === Export meaningfull data from the log ===
+        # === Extract and export meaningfull data from log file ===
     
         dataPath = "#{resultPath}/energy_data.json"
-        logToJson(logPath, "#{dataPath}")
+        dataJson = logToJson(logPath, "#{dataPath}")
 
-
-        # === Compute averages statistics for display at end of measurements
-        system("julia --project ./scripts/compute_energy_summary.jl #{dataPath}")
-        checkExitstatus
-    
-        File.open("#{resultPath}/energy_summary.md").each_line { |line|
-            
-            case line
-            when /Average current : (\d+\.?\d*) A/
-                currentAvgs[tpgDirName] = $1.to_f
-            when /Average power : (\d+\.?\d*) W/
-                powerAvgs[tpgDirName] = $1.to_f
-            when /Average step execution time : (\d+\.?\d*) ([a-zA-Z]*)/    # TODO implement this in julia script
-                stepTimeAvgs[tpgDirName] = $1.to_f
-                timeUnits[tpgDirName] = $2
-            when /Total energy consumption : (\d+\.?\d*) J/
-                totalEnergyConsumption[tpgDirName] = $1.to_f
-            end
-        }.close
-    
+        currentAvgs[tpgDirName] = dataJson["summary"]["averageCurrent"]
+        powerAvgs[tpgDirName] = dataJson["summary"]["averagePower"]
+        executionTimeAvgs[tpgDirName] = dataJson["summary"]["executionTavg"]
+        totalEnergyConsumption[tpgDirName] = dataJson["summary"]["totalEnergy"]
     }
 
 
@@ -221,7 +203,7 @@ if stages["Measures"]
         puts "#{tpgDirName}"
         puts "\tAverage current : #{(currentAvgs[tpgDirName] * 1000).round(4)} mA"
         puts "\tAverage power : #{powerAvgs[tpgDirName].round(4)} W"
-        puts "\tAverage step execution time : #{stepTimeAvgs[tpgDirName].round(4)} #{timeUnits[tpgDirName]}"
+        puts "\tAverage step execution time : #{executionTimeAvgs[tpgDirName]}"
         puts "\tTotal energy consumption : #{(totalEnergyConsumption[tpgDirName] * 1000).round(4)} mJ"
     }
 
@@ -229,7 +211,7 @@ end
 
 
 
-# =====[ Analysis stage ]=====ExecutionStats
+# =====[ Analysis stage ]=====
 
 if stages["Analysis"]
 
