@@ -47,7 +47,7 @@ end
 
 all_result_paths = []
 
-isResultDir(fullPath::String) = occursin(r"^.*[0-9\-_]*_results$", fullPath)
+isResultDir(fullPath::String) = occursin(r"^.*_results$", fullPath)
 
 cd((@__DIR__) * "/../TPG") do 
 
