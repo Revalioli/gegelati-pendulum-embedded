@@ -21,9 +21,13 @@ serialPortPath = "/dev/ttyACM0"
 # Set to true if you want to display generated graphs. Image files will still be generated.
 showGraph = false
 
+# Set to true if you want to give all TPGs during measurement the same seed, and thus the same inital conditions
+sameSeed = false
+
+# Prefix used for result directories (Measure stage)
+resultDirPrefix = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
+
 # ===============================
-
-
 
 
 C_UINT_MAX = 4294967295     # C language max unsigned int constant value from limits.h
@@ -75,7 +79,11 @@ stages = { "CodeGen" => true, "Measures" => true, "Analysis" => true, "PlotResul
 
 OptionParser.new{ |parser|
 
-    parser.on("--skip STAGE"){ |to_skip|
+    parser.on("-p PORT", "--port PORT", "tty device of the serial port (default is /dev/ttyACM0)"){ |port|
+        serialPortPath = port
+    }
+
+    parser.on("--skip STAGE", "don't execute a specific stage in : #{stages.keys.join(", ")}"){ |to_skip|
         if stages.key?(to_skip)
             stages[to_skip] = false
             puts "Skipping stage #{to_skip}"
@@ -84,8 +92,21 @@ OptionParser.new{ |parser|
         end
     }
 
-    parser.on("--show"){
+    parser.on("--show", "open all generated plots in browser"){
         showGraph = true
+    }
+
+    parser.on("--same-seed", "use the same seed for each measures (i.e. same initial conditions for all TPGs)"){
+        sameSeed = true;
+    }
+
+    parser.on("--prefix PREFIX", "set a custom prefix for the result directories (Measure stage), must not contain any whitespace or /. Default is the current time with the format YYYY-MM-DD_HH-MM-SS"){ |prefix|
+        resultDirPrefix = prefix
+    }
+
+    parser.on("-h", "--help", "print this message"){
+        puts parser
+        exit
     }
     
 }.parse!
@@ -128,16 +149,20 @@ if stages["Measures"]
     timeUnits = {}
     totalEnergyConsumption = {}
 
-    currentTime = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
+    # currentTime = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
 
+    # Only used if all measurements are done with the same seed
+    common_seed = rand(C_UINT_MAX)
 
     valid_TPG_directories.each { |tpgDirName|
 
         # === Compiling executable ===
+
+        seed = sameSeed ? common_seed : rand(C_UINT_MAX)
     
         # No matter the TPG, the program on the STM32 will always initialise itself the same way, so as its random number generator.
         # We want the TPGs to have random initial state, so the seed use to initialise it is geerated via this ruby script
-        system("make all -C ./bin TPG_SEED=#{rand(C_UINT_MAX)} TPG_CODEGEN_PATH=../#{tpgDirName}/CodeGen")
+        system("make all -C ./bin TPG_SEED=#{seed} TPG_CODEGEN_PATH=../#{tpgDirName}/CodeGen")
         checkExitstatus
     
         # Moving .elf binary to the current TPG subdirectory
@@ -157,7 +182,7 @@ if stages["Measures"]
         # === Start serial interface and inference ===
 
         # Create subdirectory for saving results
-        resultPath = "#{tpgDirName}/#{currentTime}_results"
+        resultPath = "#{tpgDirName}/#{resultDirPrefix}_results"
         FileUtils.mkdir(resultPath)
     
         # energy.log store messages received from the STM32 board
