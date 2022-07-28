@@ -1,6 +1,8 @@
 PROJECT_PATH=../PendulumEmbeddedSTMProject
 EXECUTABLE_NAME:=PendulumEmbeddedMeasures.elf
 
+OPTMITSATION_LEVEL:=1	# TODO use this variable to setup the optimisation level
+
 -include sources.mk
 -include $(SUBDIRS_MK)
 

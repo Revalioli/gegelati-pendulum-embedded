@@ -9,14 +9,20 @@ ifneq ($(TPG_CODEGEN_PATH),)
 	TPG_CODEGEN_INCLUDE:=-I$(TPG_CODEGEN_PATH)
 endif
 
+# Force pendulum.o and pendulum_program.o always out of date. Because providing TPG_CODEGEN_PATH allow us to
+# avoid file copying, the targeted pendulum.c and pendulum_program.c are never out of date compared to the .o, and never recompiled.
+.PHONY: Core/Src/Pendulum/pendulum.o Core/Src/Pendulum/pendulum_program.o
+
 # If a path was set in TPG_CODEGEN_PATH, then the makefile
 # will search for pendulum.h/.c in it instead of ./Core/Src/Pendulum/
 ifneq ($(TPG_CODEGEN_PATH),)
-Core/Src/Pendulum/pendulum.o: $(TPG_CODEGEN_PATH)/pendulum.c
-	arm-none-eabi-gcc "$<" -mcpu=cortex-m4 -std=gnu11 -DUSE_HAL_DRIVER -DSTM32F446xx -c $(TPG_CODEGEN_INCLUDE) $(TPG_CODEGEN_INCLUDE) -I$(PROJECT_PATH)Core/Inc -I$(PROJECT_PATH)/Drivers/STM32F4xx_HAL_Driver/Inc -I$(PROJECT_PATH)/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I$(PROJECT_PATH)/Drivers/CMSIS/Device/ST/STM32F4xx/Include -I$(PROJECT_PATH)/Drivers/CMSIS/Include -I"$(PROJECT_PATH)/Core/Inc/Benchmark" -I"$(PROJECT_PATH)/Core/Inc/Pendulum" -I"$(PROJECT_PATH)/Core/Inc/Peripherals" -O1 -ffunction-sections -fdata-sections -Wall --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
+Core/Src/Pendulum/pendulum.o:
+	@echo "========================= Recompiling pendulum.c ====================================="
+	arm-none-eabi-gcc "$(TPG_CODEGEN_PATH)/pendulum.c" -mcpu=cortex-m4 -std=gnu11 -DUSE_HAL_DRIVER -DSTM32F446xx -c $(TPG_CODEGEN_INCLUDE) $(TPG_CODEGEN_INCLUDE) -I$(PROJECT_PATH)Core/Inc -I$(PROJECT_PATH)/Drivers/STM32F4xx_HAL_Driver/Inc -I$(PROJECT_PATH)/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I$(PROJECT_PATH)/Drivers/CMSIS/Device/ST/STM32F4xx/Include -I$(PROJECT_PATH)/Drivers/CMSIS/Include -I"$(PROJECT_PATH)/Core/Inc/Benchmark" -I"$(PROJECT_PATH)/Core/Inc/Pendulum" -I"$(PROJECT_PATH)/Core/Inc/Peripherals" -O1 -ffunction-sections -fdata-sections -Wall --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
 
-Core/Src/Pendulum/pendulum_program.o: $(TPG_CODEGEN_PATH)/pendulum_program.c
-	arm-none-eabi-gcc "$<" -mcpu=cortex-m4 -std=gnu11 -DUSE_HAL_DRIVER -DSTM32F446xx -c $(TPG_CODEGEN_INCLUDE) $(TPG_CODEGEN_INCLUDE) -I$(PROJECT_PATH)Core/Inc -I$(PROJECT_PATH)/Drivers/STM32F4xx_HAL_Driver/Inc -I$(PROJECT_PATH)/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I$(PROJECT_PATH)/Drivers/CMSIS/Device/ST/STM32F4xx/Include -I$(PROJECT_PATH)/Drivers/CMSIS/Include -I"$(PROJECT_PATH)/Core/Inc/Benchmark" -I"$(PROJECT_PATH)/Core/Inc/Pendulum" -I"$(PROJECT_PATH)/Core/Inc/Peripherals" -O1 -ffunction-sections -fdata-sections -Wall --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
+Core/Src/Pendulum/pendulum_program.o:
+	@echo "========================= Recompiling pendulum_program.c ====================================="
+	arm-none-eabi-gcc "$(TPG_CODEGEN_PATH)/pendulum_program.c" -mcpu=cortex-m4 -std=gnu11 -DUSE_HAL_DRIVER -DSTM32F446xx -c $(TPG_CODEGEN_INCLUDE) $(TPG_CODEGEN_INCLUDE) -I$(PROJECT_PATH)Core/Inc -I$(PROJECT_PATH)/Drivers/STM32F4xx_HAL_Driver/Inc -I$(PROJECT_PATH)/Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I$(PROJECT_PATH)/Drivers/CMSIS/Device/ST/STM32F4xx/Include -I$(PROJECT_PATH)/Drivers/CMSIS/Include -I"$(PROJECT_PATH)/Core/Inc/Benchmark" -I"$(PROJECT_PATH)/Core/Inc/Pendulum" -I"$(PROJECT_PATH)/Core/Inc/Peripherals" -O1 -ffunction-sections -fdata-sections -Wall --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "$@"
 
 endif
 
