@@ -212,7 +212,7 @@ if stages["Measures"]
         # === Extract and export meaningfull data from log file ===
     
         dataPath = "#{resultPath}/energy_data.json"
-        dataJson = logToJson(logPath, dataPath)
+        dataJson = logToJson(logPath, dataPath, seed)
 
         currentAvgs[tpgDirName] = dataJson["summary"]["averageCurrent"]
         powerAvgs[tpgDirName] = dataJson["summary"]["averagePower"]

@@ -5,9 +5,10 @@ require 'json'
 #
 #   **logPath** path of the parsed .log file.
 #   **jsonPath** path of the json file to be written.
+#   **seed** the seed used for the measurement in the .log file, or nil if not specified.
 #
 #   **Return :** the Hash used to generate the json file.
-def logToJson(logPath, jsonPath)
+def logToJson(logPath, jsonPath, seed=nil)
     # Format the log file from a energy measurment to a json file, easily parsable by any language.
 
     logStart = "##### Log Start #####"
@@ -95,6 +96,9 @@ def logToJson(logPath, jsonPath)
     end
 
     jsonHash["summary"]["totalEnergy"] = jsonHash["power"].sum { |p| p * measureStepTime } # In J
+
+
+    jsonHash["metadata"]["seed"] = seed
 
 
 
