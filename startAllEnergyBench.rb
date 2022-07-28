@@ -85,7 +85,9 @@ OptionParser.new{ |parser|
     }
 
     parser.on("--show"){
-        showGraph = truedataJson
+        showGraph = true
+    }
+    
 }.parse!
 
 
@@ -185,7 +187,7 @@ if stages["Measures"]
         # === Extract and export meaningfull data from log file ===
     
         dataPath = "#{resultPath}/energy_data.json"
-        dataJson = logToJson(logPath, "#{dataPath}")
+        dataJson = logToJson(logPath, dataPath)
 
         currentAvgs[tpgDirName] = dataJson["summary"]["averageCurrent"]
         powerAvgs[tpgDirName] = dataJson["summary"]["averagePower"]
@@ -218,7 +220,7 @@ if stages["Analysis"]
     puts "\033[1;31m=====[ Analysis stage ]=====\033[0m"
 
     Dir.glob("TPG/*/*_results")
-        .filter { |d| not File.exist? "#{d}/executionStats.json"}
+        .filter { |d| not File.exist? "#{d}/executionStats.json" }
         .each { |d|
             
             codeGenPath = "#{d}/../CodeGen"
