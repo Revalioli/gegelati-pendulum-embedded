@@ -1,5 +1,7 @@
 /**
  * @file INA219.c
+ * 
+ * Source files also available at : https://github.com/Revalioli/INA219_STM32_HAL
  *
  * Based on the github repository : https://github.com/komuch/PSM_INA219_STM32
  */

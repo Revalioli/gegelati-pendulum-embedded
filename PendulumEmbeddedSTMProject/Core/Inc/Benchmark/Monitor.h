@@ -4,7 +4,7 @@
 #include "main.h"
 #include "TimeUnit.h"
 
-/// Global callback that calls the record() method of Monitor::activeMonitor
+/// Global callback that calls the record() method of Monitor::activeMonitor.
 extern "C" void recordActiveMonitor();
 
 /**
@@ -31,14 +31,14 @@ class Monitor {
 	TIM_HandleTypeDef * timer;
 
 protected:
-	/// timer period unit
+	/// Timer period unit (Seconds, Milliseconds or Microseconds).
 	TimeUnit timerUnit;
 
-	/// timer period unit multiplier
+	/// Unit multiplier for one timer period.
 	float timerMultiplier;
 
 
-	friend void recordActiveMonitor();
+	friend void recordActiveMonitor();periodperiod
 
 public:
 

@@ -11,12 +11,12 @@
 #endif
 
 /**
- * \brief Environment simulating a pendulum.
+ * \brief Pendulum environment.
  * 
- * This environment is base on the one from the gegelati-apps repository, but
- * only keeping the pendulum simulation part and using a code gen TPG to
- * to action inferences.
- * Code gen files (pendulum.h/.c and pendulum_program.h/.c) are thus required
+ * This environment is based on the pendulum from the gegelati-apps repository.
+ * It only keeps  the pendulum simulation part and use a CodeGen TPG to
+ * do action inferences.
+ * CodeGen files (pendulum.h/.c and pendulum_program.h/.c) are thus required
  * for this environment.
  */
 class PendulumEnvironment {
@@ -42,29 +42,29 @@ private:
 	*/
     const std::vector<double> availableActions;
 
-    /// Generate a random double number between min and max using rand()
+    /// Generate a random double number between min and max using rand().
 	double generateRandDouble(double min, double max);
 
-	/// Current step during inference, -1 otherwise
+	/// Current step during inference, -1 otherwise. Used by interrupt code and for debug.
 	volatile int currentStep;
 
 public:
-    /// Setter for angle state
+    /// Setter for angle state.
     void setAngle(double newValue);
 
-    /// Setter for velocity
+    /// Setter for velocity.
     void setVelocity(double newValue);
 
-    /// Current angle and velocity provided to the LearningAgent
-    /// currentState[0] --> Current angle of the pendulum in [-M_PI; M_PI]
-    /// currentState[1] --> Current velocity of the pendulum in [-1;1]
-    /// This must be public to be exposed to the inference program
+    /// Current angle and velocity provided to the LearningAgent :
+    /// - currentState[0] --> Current angle of the pendulum in [-M_PI; M_PI]
+    /// - currentState[1] --> Current velocity of the pendulum in [-1;1]
+    /// This must be public to be exposed to the inference program.
     double currentState[2];
 
     /**
-    * \brief Default constructor.
+    * \brief Basic constructor.
     *
-    * Attributes angle and velocity are set to 0.0 by default.
+    * Attributes angle and velocity are set to 0.0.
     */
     PendulumEnvironment(const std::vector<double>& actions) :
             availableActions(actions), currentStep(-1)
@@ -73,16 +73,16 @@ public:
 			currentState[1] = 0.0;
 	};
 
-    /// Getter for angle state
+    /// Getter for angle state.
     double getAngle() const;
 
-    /// Getter for velocity
+    /// Getter for velocity.
     double getVelocity() const;
 
-    /// Return the current inference step
+    /// Return the current inference step.
     int getCurrentStep() const;
 
-    /// Resets the environment
+    /// Reset the environment.
     void reset(size_t seed = 0);
 
 	/**

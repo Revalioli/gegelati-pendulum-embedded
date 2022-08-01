@@ -19,7 +19,7 @@ char * readSerialLine(char * dest, int len){
 
 // Syscall related
 
-PUTCHAR_PROTOTYPE {
+int __io_putchar(int ch) {
 	uint8_t const carriageRet = '\r';
 
 	if(ch == '\n')
@@ -58,6 +58,9 @@ int _read(int file, char *ptr, int len){
 		// __io_getchar() can't check if the serial port has
 		// nothing to send and will wait indefinitely
 		// until it receive something.
+		//
+		// But this is not ideal, as standard functions will retry
+		// if they did not have enough characters.
 		for (int i = 0; i < len; i++){
 
 			int ch = __io_getchar();

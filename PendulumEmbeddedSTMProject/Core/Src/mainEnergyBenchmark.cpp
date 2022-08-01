@@ -2,7 +2,7 @@
 /**
   ******************************************************************************
   * @file           : main.c
-  * @brief          : Main program body
+  * @brief          : Main program body, used for energy consumption measurements.
   ******************************************************************************
   * @attention
   *
@@ -67,13 +67,13 @@ double initVelocity = 0.0;
 INA219_t ina219t;
 const char logStart[] = "##### Log Start #####";
 const char logEnd[] = "##### Log End #####";
-int timingNbAttempts = 10;
+int timingNbAttempts = 10;  // Number of timing measurements used for timing average
 
 // === TPG ===
 
 uint32_t seed;  // Seed use to reset the PendulumEnvironment
 extern "C" {
-	extern double* in1;
+	extern double* in1;   // Pointer shared with the CodeGen files to access environment state
 }
 
 
@@ -82,8 +82,11 @@ extern "C" {
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+
+/* Benchmark function prototypes */
 void energyBenchWrapper(void);
 void timingExecutionBenchWrapper(void);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -129,6 +132,12 @@ int main(void)
 	in1 = pendulum.currentState;
 	pendulum_ptr = &pendulum;
 
+/* The seed to use for pendulum initialisation may be specified at compile time.
+ * Through this #define, the computer used for compilation can set itself the
+ * random seed for the initial state. This is a good way to do it because the board
+ * will always start the program in almost the same conditions, so a call to
+ * HAL_GetTick() here will always return the same value for the seed.
+ */
 #ifdef TPG_SEED
   seed = TPG_SEED;
 #else
@@ -149,8 +158,8 @@ int main(void)
 	/* === Benchmark === */
 
 	// Timers are configure as follows :
-	// - TIM5, used for timing benches, count each microseconds
-	// - TIM7, used for energy monitoring count each 0.1 milliseconds, raised interrupt every 3 milliseconds
+	// - TIM5, used for timing benches, count each microseconds.
+	// - TIM7, used for energy monitoring count each 0.1 milliseconds and raise an interrupt every 3 milliseconds.
 
 	PendulumINA219Monitor pendulumMonitor(&ina219t, pendulum, &htim7, TimeUnit::Milliseconds, 3.f);
 	INA219Bench energybench(energyBenchWrapper, &pendulumMonitor);
@@ -158,10 +167,9 @@ int main(void)
 	TimingBench executionTimingBench(timingExecutionBenchWrapper, &htim5, timingNbAttempts, TimeUnit::Microseconds);
 
   std::cout << "START" << std::endl;  // Synchronise with PC
-
   std::cout << "Seed STM32 : " << seed << std::endl;
-
   char buffStart;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -172,10 +180,12 @@ int main(void)
     read(STDIN_FILENO, &buffStart, sizeof(char));
 		if(buffStart == '\n'){
 
-				// Reset pendulum environment and store the initial conditions
+			// Reset pendulum environment and store the initial conditions
 			pendulum.reset(seed);
 			initAngle = pendulum.getAngle();
 			initVelocity = pendulum.getVelocity();
+
+      /* Energy consumption measurements */
 
 			std::cout << "Starting energy bench" << std::endl;
 
@@ -184,6 +194,9 @@ int main(void)
 			std::cout << logEnd << std::endl;
 
 			std::cout << "Exiting energy bench" << std::endl;
+
+
+      /* Execution time measurement without energy measurement interruptions */
 
 			std::cout << "Starting inference execution time bench" << std::endl;
 
@@ -256,6 +269,7 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
+/* Function for benchmarks */
 
 void energyBenchWrapper(void){
 	pendulum_ptr->startInference((int)nbActions);

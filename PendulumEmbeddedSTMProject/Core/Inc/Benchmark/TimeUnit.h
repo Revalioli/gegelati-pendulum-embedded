@@ -8,6 +8,7 @@ enum class TimeUnit {
 	None
 };
 
+/// Return the stirng representation of a TimeUnit.
 const char * getTimeUnitString(TimeUnit unit);
 
 #endif

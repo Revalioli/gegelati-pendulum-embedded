@@ -8,53 +8,55 @@
 #include "Bench.h"
 #include "TimeUnit.h"
 
-
+/**
+ * \brief Specification of the Bench class for timing benchmarks. 
+ */
 class TimingBench : public Bench {
 
 	/* === Timer === */
 
-	/// Timer used for benchmark
+	/// Timer used for benchmark.
 	TIM_HandleTypeDef * tim;
 
-	/// Time unit for timer
+	/// Time unit for timer (Seconds, Milliseconds, Microseonds).
 	TimeUnit timerUnit;
 
-	/// Multiplier to applied to timer result
+	/// Multiplier applied to the timer result.
 	float timerMultiplier;
 
 
 	/* === Results == */
 
-	/// Number of timing test to do
+	/// Number of timing tests used for timing average.
 	int nbAttempts;
 
-	/// Raw timing results for each attempts
+	/// Raw timing results for each attempts.
 	std::vector<int> attemptResults;
 
-	/// Raw average timing of last bench
+	/// Raw average timing of last bench.
 	int result;
 
 public:
 
 	/**
-	 * \brief Base constructor for TimingBench.
+	 * \brief Base constructor.
 	 *
-	 * This bench times the execution duration of its bench function using a timer.
-	 * The measure is done multiples times, and an average value is computed at the end.
+	 * This bench measure the execution time of its bench function using a timer.
+	 * The measure is done multiple times, and an average value is computed at the end.
 	 * Any interrupt that may occur during the execution of the bench function will be
-	 * part of the final result.
+	 * part of the final timing measure.
 	 *
-	 * \param[out] fun: pointer to the bench function
-	 * \param[out] timer: timer handler of the timer used
-	 * \param[in] nbAttempts: number of timing measure to do
-	 * \param[in] unit: TimeUnit corresponding to the timer tick
-	 * \param[in] unitMultiplier: unit multiplier corresponding to the timer tick
+	 * \param[in] fun: pointer to the bench function.
+	 * \param[out] timer: TIM_HandleTypeDef * of the timer used.
+	 * \param[in] nbAttempts: number of timing measures to do before computing timing average.
+	 * \param[in] unit: TimeUnit corresponding to the timer tick.
+	 * \param[in] unitMultiplier: unit multiplier corresponding to the timer tick.
 	 */
 	TimingBench(void (*fun)(void), TIM_HandleTypeDef * timer, int nbAttempts = 5, TimeUnit unit = TimeUnit::Milliseconds, float unitMultiplier = 1.f);
 
 	virtual ~TimingBench() {};
 
-	/// Starts bench, return the timing (average on results of all attempts)
+	/// Starts bench and return the timing (average on results of all attempts)
 	/// Multiple this result by the period of the timer to get the actual elapsed time
 	void startBench() override;
 
