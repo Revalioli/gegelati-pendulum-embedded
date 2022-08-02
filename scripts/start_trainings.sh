@@ -25,7 +25,7 @@ checkExitStatus
 cd ..
 
 # For every directory in Trainer-Generator/to_train ...
-dirs=$(ls to_train)
+dirs=$(ls to_train --ignore=README.md)
 for d in $dirs
 do
     # ... copy the necessary files and start the training
