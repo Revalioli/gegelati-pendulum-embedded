@@ -33,11 +33,21 @@ Even if not used in the final program, GPIO13 is already configure to take input
 ## How to replace the current sensor
 
 Want to change for something else than the INA219 current sensor ? Just create a new derived class from `Monitor`, and a new class derived from `Bench`. You can use `INA219Monitor` and `INA219Bench` as references.
-
 You may also want to create your own version of the `PendulumINA219Monitor` class.
+
+Depending on how your current sensor work, you will have to adapt the peripherals used. Make sure you don't deactive the UART2 in the process, or timers 5 and 7.
 
 ## How to use another environment
 
 You can create a new environment class based on the `PendulumEnvironment` class and integrate it in the existing code. You will also have to modify the data pointer and the CodeGen files.
 
 You may also create a new derived monitor from `INA219Monitor` to record data specific to your new environment.
+
+## How to use another board
+
+It will require a bit more modifications but is still possible.
+
+**To trade the STM32F446 for another STM32 board,** you will have to find and import the correct HAL headers for your board. The code and #includes in peripheral files and main files should be change. Also your board might not have the same tools for serial communication with a PC, so you may have to adapt it too.
+Other files use HAL structs to interact with the board, so no need to modify them.
+
+**If you want to use a completly different board** (from another company), then more files will have to be changed, because the STMicroelectronics HAL library could not be used anymore. At this point it's up to you to adapt the code for what you need and what you want.
