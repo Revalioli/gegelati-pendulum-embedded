@@ -7,7 +7,7 @@ checkExitStatus() {
     code=$?
     if [[ $code -ne 0 ]]
     then
-        echo "Something wrong hapenned, last exit code is $code, exiting script"
+        printf "\033[1;91mERROR\033[0m --- Something wrong hapenned, last exit code is $code, exiting script\n"
         exit 1
     fi
 }
@@ -39,10 +39,12 @@ do
 
     cmake --build . --target Trainer
     checkExitStatus
+    echo
 
     cd Release  # Train-Generator/bin/Release
     ./Trainer
     checkExitStatus
+    echo
 
     # Save results
     cp -R Results ../../to_train/$d

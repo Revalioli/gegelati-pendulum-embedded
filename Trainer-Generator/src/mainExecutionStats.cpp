@@ -22,8 +22,7 @@ int main(int argc, char *argv[]) {
      * The executionStats.json file is generated in the same directory as the .dot file.
      */
 
-    std::cout << "=====[ Execution statistics target ]=====" << std::endl << std::endl;
-
+    std::cout << "\033[1;33m=====[ Execution statistics target ]=====\033[0m" << std::endl;
     /* Checking arguments */
 
     if(argc < 4){

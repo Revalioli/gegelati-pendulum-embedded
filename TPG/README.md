@@ -16,6 +16,6 @@ A valid TPG directory tree has a structure as follows :
             * energy_data.json  --> enegy measurements results (extracted from energy.log)
             * energy_stats.json --> additional energy statistics (computed from energy_data.json)
             * graph.png --> energy measurements results in a graph
-        * + additional files you would like to put here 
+        * + additional files you want to put there 
 
 Directories without the required files are ignored.

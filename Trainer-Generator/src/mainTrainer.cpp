@@ -8,7 +8,7 @@
 
 
 int main() {
-    std::cout << "=====[ Trainer target ]=====" << std::endl << std::endl;
+    std::cout << "\033[1;33m=====[ Trainer target ]=====\033[0m" << std::endl;
 
     std::cout << "Environment initialisation" << std::endl;
 

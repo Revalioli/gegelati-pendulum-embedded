@@ -7,7 +7,7 @@ checkExitStatus() {
     code=$?
     if [[ $code -ne 0 ]]
     then
-        echo "Something wrong hapenned, last exit code is $code, exiting script"
+        printf "\033[1;91mERROR\033[0m --- Something wrong hapenned, last exit code is $code, exiting script\n"
         exit 1
     fi
 }
@@ -38,7 +38,7 @@ do
 
     if (checkValidDirectory $d)
     then
-        echo "Generating CodeGen for $d"
+        printf "\033[1;36mGenerating CodeGen for $d\n\033[0m"
 
         # Using Generator target of the Trainer-Genertor C++ project
 
@@ -49,15 +49,17 @@ do
         # Building target
         cmake --build ../Trainer-Generator/bin --target Generator
         checkExitStatus
+        echo
 
         # Do code generation
         ../Trainer-Generator/bin/Release/Generator $d/CodeGen/out_best.dot
         checkExitStatus
+        echo
 
-        echo "Successful code generation for $d"
+        printf "\033[1;36mSuccessful code generation for $d\n\033[0m"
     elif [ -d $d ]
     then
-        echo "Skip $d (not all required files or TPG already generated)"
+        printf "\033[1;36mSkip $d (not all required files or TPG already generated)\n\033[0m"
     fi
 
 done

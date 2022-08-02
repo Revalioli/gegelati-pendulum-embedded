@@ -7,7 +7,7 @@
 
 
 int main(int argc, char *argv[]) {
-    std::cout << "=====[ Generator target ]=====" << std::endl << std::endl;
+    std::cout << "\033[1;33m=====[ Generator target ]=====\033[0m" << std::endl;
 
     /*
      * Program require 1 arguments :

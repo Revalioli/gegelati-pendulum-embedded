@@ -269,6 +269,7 @@ if stages["Analysis"]
             # Start replay and execution stats export for 1000 inferences
             system("./Trainer-Generator/bin/Release/ExecutionStats #{codeGenPath}/out_best.dot #{energyData["metadata"]["startAngle"]} #{energyData["metadata"]["startVelocity"]}")
             checkExitstatus
+            puts
 
             # Move executions_stats.json to result directory
             FileUtils.mv("#{codeGenPath}/executionStats.json", "#{d}")
