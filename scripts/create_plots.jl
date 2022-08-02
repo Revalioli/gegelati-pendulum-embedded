@@ -1,4 +1,16 @@
+# This file regroups different functions to create PlotlyJS plots from data in
+# the energy measurements results and execution stats results files.
+#
+# Import these in a julia script by including this file.
 
+
+# ===[ Utilities ]===
+
+"""
+    displayInBrowser(p::Plot)
+
+Display a PlotlyJS Plot in the default web-browser (use xdg-open command).
+"""
 function displayInBrowser(p::Plot)
     open("/tmp/plotly_view.html", "w") do io
         PlotlyBase.to_html(io, p)
@@ -7,12 +19,35 @@ function displayInBrowser(p::Plot)
     run(`xdg-open /tmp/plotly_view.html`)
 end
 
+"""
+    displayInBrowser(html_path::String)
+
+Open an html file in the default web browser (use xdg-open command).
+"""
 function displayInBrowser(html_path::String)
     run(`xdg-open $html_path`)
 end
 
+"""
+    sortSymbolsAsInt!(a::AbstractVector{Symbol})
 
-"Return a new plot with the energy measures data of a TPG."
+Sort a Vector of Symbols in ascending order by casting each Symbol to Int.
+"""
+function sortSymbolsAsInt!(a::AbstractVector{Symbol})
+
+    sort!(a,lt = (x,y) -> parse(Int, string(x)) < parse(Int, string(y)))
+
+end
+
+
+# ===[ Plot creation ]===
+
+
+"""
+    plotEnergyData(jsonDataPath::String)
+
+Return a Plot object using the energy measures data json file of a TPG.
+"""
 function plotEnergyData(jsonDataPath::String)
 
     measuresDataJson = JSON3.read(read(jsonDataPath))
@@ -33,7 +68,7 @@ function plotEnergyData(jsonDataPath::String)
     # Set current in mA
     currentData.*= 1000
 
-    xAxisValues = [i*yTick for i in 0:length(stepData)-1]
+    timeAxis = [i*yTick for i in 0:length(stepData)-1]
 
 
     # ===[ Plotting ]===
@@ -41,9 +76,9 @@ function plotEnergyData(jsonDataPath::String)
     Plot(
         
         [
-            scatter(x = xAxisValues, y = currentData, name="Current (mA)", modes="lines", line_color="red", yaxis="y1"), 
-            scatter(x = xAxisValues, y = powerData, name="Power (W)", modes="lines", line_color="green", yaxis="y2"),
-            scatter(x= xAxisValues, y = stepData, name="Inference n°", modes="lines", line_color="blue", yaxis="y3")
+            scatter(x = timeAxis, y = currentData, name="Current (mA)", modes="lines", line_color="red", yaxis="y1"), 
+            scatter(x = timeAxis, y = powerData, name="Power (W)", modes="lines", line_color="green", yaxis="y2"),
+            scatter(x= timeAxis, y = stepData, name="Inference n°", modes="lines", line_color="blue", yaxis="y3")
         ],
 
         Layout(
@@ -52,7 +87,7 @@ function plotEnergyData(jsonDataPath::String)
             
             xaxis_title="Execution time ($yUnit)",
             xaxis_domain=[0.0, 0.8],
-            xaxis_range=(-2, xAxisValues[end] + 2),
+            xaxis_range=(-2, timeAxis[end] + 2),
 
             yaxis_title="Current (mA)",
             yaxis_title_color="red",
@@ -89,14 +124,11 @@ function plotEnergyData(jsonDataPath::String)
 end
 
 
-function sortSymbolsAsInt!(a::AbstractVector{Symbol})
+"""
+    plotExecutionData(jsonDataPath::String)
 
-    sort!(a,lt = (x,y) -> parse(Int, string(x)) < parse(Int, string(y)))
-
-end
-
-
-"Return a tuple with two plots displaying the executions statistics provided."
+Return a tuple with two SyncPlot displaying the executions statistics provided in the json file.
+"""
 function plotExecutionData(jsonDataPath::String)
 
     data = JSON3.read(read(jsonDataPath))
@@ -144,7 +176,10 @@ function plotExecutionData(jsonDataPath::String)
 
     # === For Instruction plot ===
 
-    instIdx = keys(execStats["avgNbExecutionPerInstruction"]) |> collect |> sortSymbolsAsInt!
+    instIdx = keys(execStats["avgNbExecutionPerInstruction"]) |> collect
+    sort!(instIdx, by = x -> execStats["avgNbExecutionPerInstruction"][x], rev=true)  # Sort instructions in descending order of average number of executions
+
+
     table_instruction_averages = table(
         header_values = [ "Instruction index", "Average executions"],
         cells_values = [
@@ -153,27 +188,10 @@ function plotExecutionData(jsonDataPath::String)
         ],
     )
 
-    # Determinating the best layout for all instruction distributions
-    nbDist = length(execStats["distributionNbExecutionPerInstruction"])
-
-    square = sqrt(nbDist)
-    nbRow = floor(Integer ,square)  # Number of rows of the plot
-    nbCol = nbRow + 1   # Number of rows of the plot, must include the column for th average stats
-
-    if (square - nbRow) != 0
-        nbCol += 1
-        if (square - nbRow) > 0.5
-            nbRow += 1
-        end
-    end
-
     bar_instructions = []   # Traces for all instructions distributions
-    bar_instructions_titles = []
     for (instruction_idx, dist_object) in execStats["distributionNbExecutionPerInstruction"]
 
-        pairs = [(key, val) for (key, val) in dist_object]
-
-        idx = keys(dist_object) |> collect # |> sortSymbolsAsInt!
+        idx = keys(dist_object) |> collect
 
         trace = bar(
             name = instruction_idx,
@@ -181,7 +199,7 @@ function plotExecutionData(jsonDataPath::String)
             y = [dist_object[val] for val in idx],
         )
         push!(bar_instructions, trace)
-        push!(bar_instructions_titles, "Instruction $instruction_idx")
+
     end
 
 
@@ -200,11 +218,6 @@ function plotExecutionData(jsonDataPath::String)
             Spec(kind="xy")                 Spec(kind="xy")
             Spec(kind="xy")                 Spec(kind="xy")
         ],
-        # subplot_titles = [
-        #     missing                                             "Number of inferences per number of evaluated programs"
-        #     "Number of inferences where each vertex was used"   "Number of inferences per number of executed lines"
-        #     "Number of inferences per number of evaluated teams" missing
-        # ],
         row_heights = [0.45, 0.45, 0.1],
         vertical_spacing = 0.07,
         horizontal_spacing = 0.04,
@@ -261,9 +274,6 @@ function plotExecutionData(jsonDataPath::String)
 
     # === For Instruction plot ===
 
-
-    averageColumnWidth = 0.1    # Relative width of the instruction average stats on the left
-
     instructionPlot = make_subplots(
         rows = 1, cols = 2,
         column_widths = [0.1, 0.9],
@@ -281,7 +291,7 @@ function plotExecutionData(jsonDataPath::String)
     )
 
     for trace in bar_instructions
-        # Traces can be stackd in the same subplot
+        # Traces can be stacked in the same subplot
         add_trace!(
             instructionPlot,
             trace,

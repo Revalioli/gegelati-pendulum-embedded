@@ -21,7 +21,7 @@ picocom.log
 *Manifest.toml
 
 # CLion project for training TPG, genrating codegen and analyse execution with GEGELATI
-Trainer-Generator/bin/*
+Trainer-Generator/bin
 */cmake-build-release
 */cmake-build-debug
 */.idea

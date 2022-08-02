@@ -3,5 +3,5 @@
 using Pkg
 
 Pkg.activate(".")
-Pkg.add("Plots")
+Pkg.add("PlotlyJS")
 Pkg.add("JSON3")

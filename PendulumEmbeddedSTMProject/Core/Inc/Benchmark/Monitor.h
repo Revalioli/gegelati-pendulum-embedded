@@ -38,7 +38,7 @@ protected:
 	float timerMultiplier;
 
 
-	friend void recordActiveMonitor();periodperiod
+	friend void recordActiveMonitor();
 
 public:
 

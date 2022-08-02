@@ -1,5 +1,8 @@
 #!/usr/bin/bash
 
+# Generate the CodeGen files for all pendulum TPG that are in subfolders of the TPG directory.
+# This script uses the Generator C++ target of the Trainer-Generator directory.
+
 checkExitStatus() {
     code=$?
     if [[ $code -ne 0 ]]
@@ -10,7 +13,6 @@ checkExitStatus() {
 }
 
 checkValidDirectory(){
-
     local d=$1
 
     [ $# -ne 0 ] && [ -d "$d" ] && 
@@ -19,6 +21,7 @@ checkValidDirectory(){
 
     return  # Last evaluated logical expression stored its "result code" in $?, which is returned by return
 }
+
 
 SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 cd $SCRIPT_DIR/../TPG     # TPG/

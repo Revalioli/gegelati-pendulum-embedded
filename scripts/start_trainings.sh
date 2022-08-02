@@ -1,5 +1,8 @@
 #!/usr/bin/bash
 
+# Start trainings for every parameters in subdirectories of Trainer-Generator/to_train.
+# See the corresponding README.md in Trainer-Generator/to_train
+
 checkExitStatus() {
     code=$?
     if [[ $code -ne 0 ]]
@@ -11,10 +14,11 @@ checkExitStatus() {
 
 SCRIPT_DIR=$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)
 cd $SCRIPT_DIR/../Trainer-Generator     # Train-Generator
+checkExitStatus
 
 # CMake configuration
 rm -r bin
-mkdir bin
+mkdir -p bin
 cd bin
 cmake ..
 checkExitStatus

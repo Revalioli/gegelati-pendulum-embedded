@@ -3,13 +3,13 @@
 using PlotlyJS
 using JSON3
 
-include("createPlots.jl")
+include("create_plots.jl")
 
 # =====[ Script parameters ]=====
 
 showPlot = false
 
-# =====[ ARGS parsing ]=====
+# =====[ Functions ]=====
 
 """
     getOptionArgument(i::Integer)
@@ -24,6 +24,32 @@ function getOptionArgument(i::Integer)
         exit(1)
     end
 end
+
+"""
+    filterByFiles!(dirPath::String, requiredFiles::Vector{String}, excludedFiles::Vector{String})
+
+Return if a directory has all required files and doesn't have all exlcuded files.
+"""
+function checkFiles(dirPath::String, requiredFiles::Vector{String}, excludedFiles::Vector{String}=[])
+
+    missingFile = findfirst(requiredFiles) do file
+        !isfile(dirPath * "/" * file)
+    end
+
+    if !isnothing(missingFile)
+        return false
+    end
+
+    unexpectedFile = findfirst(excludedFiles) do file
+        isfile(dirPath * "/" * file)
+    end
+
+    return isnothing(unexpectedFile)
+
+end
+
+
+# =====[ ARGS parsing ]=====
 
 i = 1
 while i <= length(ARGS)
@@ -60,29 +86,6 @@ cd((@__DIR__) * "/../TPG") do
             resultDirs -> append!(all_result_paths, resultDirs)
 
     end
-
-end
-
-"""
-    filterByFiles!(dirPath::String, requiredFiles::Vector{String}, excludedFiles::Vector{String})
-
-Return if a directory has all required files and doesn't have all exlcuded files.
-"""
-function checkFiles(dirPath::String, requiredFiles::Vector{String}, excludedFiles::Vector{String}=[])
-
-    missingFile = findfirst(requiredFiles) do file
-        !isfile(dirPath * "/" * file)
-    end
-
-    if !isnothing(missingFile)
-        return false
-    end
-
-    unexpectedFile = findfirst(excludedFiles) do file
-        isfile(dirPath * "/" * file)
-    end
-
-    return isnothing(unexpectedFile)
 
 end
 

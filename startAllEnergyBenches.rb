@@ -12,8 +12,10 @@ require 'serialport'
 require_relative 'scripts/logToJson'
 
 
-
 # =====[ Script parameters ]=====
+
+# Change these parameters ONLY if you want to change the default values, otherwise use the script command line arguments.
+
 
 # Path to the serial port corresponding to the STM32 board
 serialPortPath = "/dev/ttyACM0"
@@ -149,10 +151,9 @@ if stages["Measures"]
     timeUnits = {}
     totalEnergyConsumption = {}
 
-    # currentTime = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
-
-    # Only used if all measurements are done with the same seed
+    # Only used if sameSeed parameter is true
     common_seed = rand(C_UINT_MAX)
+
 
     valid_TPG_directories.each { |tpgDirName|
 
@@ -160,8 +161,8 @@ if stages["Measures"]
 
         seed = sameSeed ? common_seed : rand(C_UINT_MAX)
     
-        # No matter the TPG, the program on the STM32 will always initialise itself the same way, so as its random number generator.
-        # We want the TPGs to have random initial state, so the seed use to initialise it is geerated via this ruby script
+        # No matter the TPG, the program on the STM32 will always initialise itself the same way and its random number generator too.
+        # We want the TPGs to have a random initial state, so the seed used to initialise it is geerated via this ruby script.
         system("make all -C ./bin TPG_SEED=#{seed} TPG_CODEGEN_PATH=../#{tpgDirName}/CodeGen")
         checkExitstatus
     
@@ -181,15 +182,18 @@ if stages["Measures"]
     
         # === Start serial interface and inference ===
 
-        # Create subdirectory for saving results
+        # Create subdirectory to save results
         resultPath = "#{tpgDirName}/#{resultDirPrefix}_results"
         FileUtils.mkdir(resultPath)
     
-        # energy.log store messages received from the STM32 board
+        # energy.log stores messages received from the STM32 board
         logPath = "#{resultPath}/energy.log"
         logFile = File.open(logPath, "w+");
 
         SerialPort.open(serialPortPath, baud = 115200) { |serialport|
+
+            # The way the ruby script synchronise with the STM32 isn't perfect, and might sometimes not work.
+            # It might be good to add a periodic retry in the script or on the board to avoid synchornisation failure.
 
             until (serialport.readline == "START\r\n") do end   # Waiting for STM32 to synchronise
             serialport << "\n"  # The STM32 is waiting for a newline character, which will start the inference
@@ -280,10 +284,10 @@ if stages["PlotResults"]
     puts "\033[1;31m=====[ PlotResults stage ]=====\033[0m"
     
     if showGraph
-        system("julia --project ./scripts/generateEnergyPlots.jl --show")
+        system("julia --project ./scripts/generate_energy_plots.jl --show")
         checkExitstatus
     else
-        system("julia --project ./scripts/generateEnergyPlots.jl")
+        system("julia --project ./scripts/generate_energy_plots.jl")
         checkExitstatus
     end
 end
