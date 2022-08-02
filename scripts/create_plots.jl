@@ -311,3 +311,50 @@ function plotExecutionData(jsonDataPath::String)
     (topologyPlot, instructionPlot)
     
 end
+
+"""
+    plotExecutionSummary(jsonExecutionStatsPaths::Vector{String}, labels::Vector{String})
+
+Plot together data from different execution stats json files for comparison. `jsonExecutionStatsPaths` and `labels`
+should have the same length.
+
+Created plots are return in a SyncPlot object.
+"""
+function plotExecutionSummary(jsonExecutionStatsPaths::Vector{String}, labels::Vector{String})
+
+    if length(jsonExecutionStatsPaths) != length(labels)
+        throw(ArgumentError("Vectors jsonExecutionStatsPaths and labels lengths don't match"))
+    end
+
+    jsonObjects = [ JSON3.read(read(path)) for path in jsonExecutionStatsPaths ]
+
+    barTraces = GenericTrace[]
+    for (execData, label) in zip(jsonObjects, labels)
+
+        t = bar(
+            x = [ "Avg visited teams", "Avg evaluated programs", "Avg executed lines" ],
+            y = [ 
+                execData["ExecutionStats"]["avgEvaluatedTeams"],
+                execData["ExecutionStats"]["avgEvaluatedPrograms"],
+                execData["ExecutionStats"]["avgExecutedLines"]
+            ],
+            name = label,
+        )
+
+        push!(barTraces, t)
+
+    end
+
+    # println(barTraces)
+    println(typeof(barTraces))
+
+    p = plot(barTraces);
+
+    relayout!(
+        p,
+        title = "Execution Stats Summary"
+    )
+
+    return p
+
+end

@@ -81,7 +81,7 @@ stages = { "CodeGen" => true, "Measures" => true, "Analysis" => true, "PlotResul
 
 OptionParser.new{ |parser|
 
-    parser.on("-p PORT", "--port PORT", "tty device of the serial port (default is /dev/ttyACM0)"){ |port|
+    parser.on("-p PORT", "--port PORT", "tty device of the serial port (default is #{serialPortPath})"){ |port|
         serialPortPath = port
     }
 
