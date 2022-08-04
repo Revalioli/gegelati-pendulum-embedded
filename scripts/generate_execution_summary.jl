@@ -23,4 +23,6 @@ labels = [ i |> dirname |> dirname |> basename for i in executionStatsPaths ]
 
 p = plotExecutionSummary(executionStatsPaths, labels)
 
+relayout!(p, title = "Execution Stats Summary --- $(ARGS[1])")
+
 displayInBrowser(p.plot)

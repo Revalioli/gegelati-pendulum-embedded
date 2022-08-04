@@ -5,12 +5,12 @@ require 'fileutils'
 require 'optparse'
 require 'json'
 
-
 require 'serialport'
-
 
 require_relative 'scripts/logToJson'
 
+
+C_UINT_MAX = 4294967295     # C language max unsigned int constant value from limits.h
 
 # =====[ Script parameters ]=====
 
@@ -29,10 +29,11 @@ sameSeed = false
 # Prefix used for result directories (Measure stage)
 resultDirPrefix = Time.now.strftime("%Y-%m-%d_%H-%M-%S")
 
+# Only used if sameSeed parameter is true
+common_seed = rand(C_UINT_MAX)
+
 # ===============================
 
-
-C_UINT_MAX = 4294967295     # C language max unsigned int constant value from limits.h
 
 
 # Get all subdirectories of dir that contained all the required files, given as an array of relative path from dir/subdirectory/.
@@ -98,7 +99,8 @@ OptionParser.new{ |parser|
         showGraph = true
     }
 
-    parser.on("--same-seed", "use the same seed for each measures (i.e. same initial conditions for all TPGs)"){
+    parser.on("--same-seed [SEED]", "use the same seed for each measures (i.e. same initial conditions for all TPGs), if no seed is given, generate one randomly"){ |seed|
+        common_seed = seed unless seed.nil?
         sameSeed = true;
     }
 
@@ -150,9 +152,6 @@ if stages["Measures"]
     executionTimeAvgs = {}
     timeUnits = {}
     totalEnergyConsumption = {}
-
-    # Only used if sameSeed parameter is true
-    common_seed = rand(C_UINT_MAX)
 
 
     valid_TPG_directories.each { |tpgDirName|

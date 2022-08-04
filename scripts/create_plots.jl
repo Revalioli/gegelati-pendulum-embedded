@@ -326,7 +326,24 @@ function plotExecutionSummary(jsonExecutionStatsPaths::Vector{String}, labels::V
         throw(ArgumentError("Vectors jsonExecutionStatsPaths and labels lengths don't match"))
     end
 
+    # Green colorscale
+    colorScale = [
+        "#3f8125",
+        "#4b9a2c",
+        "#56b233",
+        "#63c73d",
+        "#77ce55",
+        "#8ad56d",
+        "#9edc85",
+        "#b1e39e",
+        "#c5eab6",
+        "#d8f1ce",
+        "#ecf8e7",
+        "#ffffff"
+    ]
+
     jsonObjects = [ JSON3.read(read(path)) for path in jsonExecutionStatsPaths ]
+
 
     barTraces = GenericTrace[]
     for (execData, label) in zip(jsonObjects, labels)
@@ -352,7 +369,8 @@ function plotExecutionSummary(jsonExecutionStatsPaths::Vector{String}, labels::V
 
     relayout!(
         p,
-        title = "Execution Stats Summary"
+        title = "Execution Stats Summary",
+        colorway = colorScale,
     )
 
     return p
