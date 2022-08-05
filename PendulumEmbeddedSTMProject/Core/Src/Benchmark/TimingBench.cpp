@@ -53,9 +53,9 @@ void TimingBench::printResult(){
 		const char * unitStr;
 		unitStr = getTimeUnitString(this->timerUnit);
 
-		std::cout << "=== T_min : " << (minTime * this->timerMultiplier) << ' ' << unitStr << std::endl;
+		std::cout << "=== T_min : " << std::fixed << (minTime * this->timerMultiplier) << ' ' << unitStr << std::endl;
 		std::cout << "=== T_avg : " << (this->result * this->timerMultiplier) << ' ' << unitStr << std::endl;
-		std::cout << "=== T_max : " << (maxTime * this->timerMultiplier) << ' ' << unitStr << std::endl;
+		std::cout << "=== T_max : " << (maxTime * this->timerMultiplier) << ' ' << unitStr << std::defaultfloat << std::endl;
 
 	}
 
