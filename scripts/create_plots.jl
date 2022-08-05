@@ -376,3 +376,91 @@ function plotExecutionSummary(jsonExecutionStatsPaths::Vector{String}, labels::V
     return p
 
 end
+
+"""
+    plotInstructionSetsComparison(filePaths::Vector{String}, categories::Vector{String}, jsonField::String, transform::Function = identity)
+
+Create a box plot using values of one data field from a set of json files statistics.
+Each file is associated a category, which is the box trace where the value will be added.
+Typically, the category can be the instruction set used by the TPG that generated the data.  
+
+*The data field must be accessible via nested JSON objects, arrays are not supported.*
+
+# Arguments
+
+- **filePaths[in] :** Vector{String} of all json file paths.
+- **category[in] :** Vector{String} the assocaited categories for each path.
+- **jsonField[in] :** field of the value to be used in all json file, nested objects fields are separeted with a /
+(example : to use the field `["top"]["nested"]` give `"top/nested"` to the function).
+- **transform[in] :** optional function applied on each json value before adding it to the plot.
+
+# Example
+
+```julia
+p = plotInstructionSetsComparison(
+    [ "/path/to/file_1", "/path/to/file_2", "/path/to/file_3" ],
+    [ "cat1", "cat2", "cat1" ],
+    "Summary/Number",
+    d -> d * 1000
+)
+```
+The resulting SyncPlot p will contain 2 box traces (cat1 and cat2).
+Json files must have the following structure :
+```json
+    ...
+    Summary : {
+        ...
+        Number : {Value},
+        ...
+    },
+    ...
+}
+```
+Before ploting, `Value` will be multiplied by 1000.
+The resulting SyncPlot p will have to box traces : cat1 with two points, and cat2 with one point.
+
+
+# Exceptions thrown
+- **ArgumentError** : when `filePaths` and `categories` don't have the same length.
+
+"""
+function plotInstructionSetsComparison(filePaths::Vector{String}, categories::Vector{String}, jsonField::String, transform::Function = identity)
+
+    if length(filePaths) != length(categories)
+        throw(ArgumentError("Vectors filePaths and categories lengths don't match"))
+    end
+
+    # Organise paths by instructionSets in a Dict
+    pathBySets = Dict( zip( categories, [String[] for i in 1:length(categories)] ) )
+
+    for (path, set) in zip(filePaths, categories)
+        push!(pathBySets[set], path)
+    end
+
+    # Split nested fielf in preparation for call to fold
+    jsonPath = split(jsonField, '/')
+
+    box_traces = GenericTrace[]
+    for k in keys(pathBySets)
+
+        # Get the data in each json files
+        data = pathBySets[k] .|>
+            read .|>
+            JSON3.read .|>
+            jsonData -> foldl( (jObject, field) -> jObject[field], jsonPath, init = jsonData)
+
+        transformed_data = transform.(data) # Apply transformation on data
+
+        t = box(
+            y = transformed_data,
+            boxpoints = "all",
+            name = k,
+        )
+
+        push!(box_traces, t)
+
+    end
+
+    plot(box_traces);
+
+end
