@@ -378,7 +378,7 @@ function plotExecutionSummary(jsonExecutionStatsPaths::Vector{String}, labels::V
 end
 
 """
-    plotInstructionSetsComparison(filePaths::Vector{String}, categories::Vector{String}, jsonField::String, transform::Function = identity)
+    plotBoxesByCategory(filePaths::Vector{String}, categories::Vector{String}, jsonField::String, transform::Function = identity)
 
 Create a box plot using values of one data field from a set of json files statistics.
 Each file is associated a category, which is the box trace where the value will be added.
@@ -397,7 +397,7 @@ Typically, the category can be the instruction set used by the TPG that generate
 # Example
 
 ```julia
-p = plotInstructionSetsComparison(
+p = plotBoxesByCategory(
     [ "/path/to/file_1", "/path/to/file_2", "/path/to/file_3" ],
     [ "cat1", "cat2", "cat1" ],
     "Summary/Number",
@@ -424,27 +424,27 @@ The resulting SyncPlot p will have to box traces : cat1 with two points, and cat
 - **ArgumentError** : when `filePaths` and `categories` don't have the same length.
 
 """
-function plotInstructionSetsComparison(filePaths::Vector{String}, categories::Vector{String}, jsonField::String, transform::Function = identity)
+function plotBoxesByCategory(filePaths::Vector{String}, categories::Vector{String}, jsonField::String, transform::Function = identity)
 
     if length(filePaths) != length(categories)
         throw(ArgumentError("Vectors filePaths and categories lengths don't match"))
     end
 
     # Organise paths by instructionSets in a Dict
-    pathBySets = Dict( zip( categories, [String[] for i in 1:length(categories)] ) )
+    pathBySet = Dict( zip( categories, [String[] for i in 1:length(categories)] ) )
 
     for (path, set) in zip(filePaths, categories)
-        push!(pathBySets[set], path)
+        push!(pathBySet[set], path)
     end
 
     # Split nested fielf in preparation for call to fold
     jsonPath = split(jsonField, '/')
 
     box_traces = GenericTrace[]
-    for k in keys(pathBySets)
+    for k in keys(pathBySet)
 
         # Get the data in each json files
-        data = pathBySets[k] .|>
+        data = pathBySet[k] .|>
             read .|>
             JSON3.read .|>
             jsonData -> foldl( (jObject, field) -> jObject[field], jsonPath, init = jsonData)
